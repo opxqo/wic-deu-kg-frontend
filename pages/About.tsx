@@ -1,163 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+
+import React from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Award, MapPin, GraduationCap, FileText, Lightbulb, Building2, FlaskConical, Library, Navigation, ExternalLink } from 'lucide-react';
+import { BookOpen, Award, MapPin, GraduationCap, FileText, Lightbulb, Building2, FlaskConical, Library } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
-import { useTheme } from '../ThemeContext';
-import * as L from 'leaflet';
-
-const LocationMap: React.FC = () => {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const markerRef = useRef<L.Marker | null>(null);
-  const { theme } = useTheme();
-  const { t } = useLanguage();
-  
-  const [activeCampus, setActiveCampus] = useState<'donghu' | 'hongan'>('donghu');
-  
-  const campusData = {
-    donghu: {
-      coords: [30.586396, 114.428991] as [number, number],
-      name: t('about.location.donghu'),
-      address: t('footer.address')
-    },
-    hongan: {
-      coords: [31.079095, 114.576511] as [number, number],
-      name: t('about.location.hongan'),
-      address: t('about.address.hongan')
-    }
-  };
-
-  const current = campusData[activeCampus];
-
-  useEffect(() => {
-    if (!mapContainerRef.current) return;
-
-    // Initialize map if not already done
-    if (!mapInstanceRef.current) {
-      const map = L.map(mapContainerRef.current, {
-        center: current.coords,
-        zoom: 15,
-        scrollWheelZoom: false,
-        zoomControl: false,
-        attributionControl: false
-      });
-      
-      new L.Control.Zoom({ position: 'bottomright' }).addTo(map);
-      mapInstanceRef.current = map;
-    }
-    
-    // Update marker
-    if (mapInstanceRef.current) {
-         // Remove old marker
-         if (markerRef.current) {
-             markerRef.current.remove();
-         }
-
-         const customIcon = L.divIcon({
-            className: 'custom-div-icon',
-            html: `<div class="relative flex items-center justify-center w-12 h-12">
-                     <div class="absolute w-full h-full bg-wic-primary/30 rounded-full animate-ping"></div>
-                     <div class="relative w-4 h-4 bg-wic-primary border-2 border-white rounded-full shadow-lg"></div>
-                   </div>`,
-            iconSize: [48, 48],
-            iconAnchor: [24, 24]
-          });
-
-         const newMarker = L.marker(current.coords, { icon: customIcon }).addTo(mapInstanceRef.current);
-         markerRef.current = newMarker;
-
-         // Fly to new location
-         mapInstanceRef.current.flyTo(current.coords, 15, {
-             duration: 1.5
-         });
-    }
-
-    // Cleanup on unmount (only once typically)
-    return () => {
-      // We don't necessarily destroy map on every render, but strict mode might
-    };
-  }, [activeCampus, current.coords]); // Re-run when campus changes
-
-  // Update tiles based on theme
-  useEffect(() => {
-    if (!mapInstanceRef.current) return;
-
-    // Remove existing tile layers
-    mapInstanceRef.current.eachLayer((layer) => {
-      if (layer instanceof L.TileLayer) {
-        mapInstanceRef.current?.removeLayer(layer);
-      }
-    });
-
-    const tileUrl = theme === 'dark' 
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' 
-      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-
-    L.tileLayer(tileUrl, {
-      maxZoom: 19,
-      subdomains: 'abcd',
-    }).addTo(mapInstanceRef.current);
-
-  }, [theme]);
-
-  return (
-    <div className="relative w-full h-[550px] rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-800 group">
-      {/* Map Container: relative and z-0 to establish stacking context */}
-      <div ref={mapContainerRef} className="w-full h-full relative z-0" />
-      
-      {/* Campus Switcher: z-10 to stay above map (z-0) but below navbar (z-999) */}
-      <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-         {(Object.keys(campusData) as Array<keyof typeof campusData>).map((key) => (
-             <button
-               key={key}
-               onClick={() => setActiveCampus(key)}
-               className={`px-4 py-2 rounded-lg text-sm font-bold shadow-md transition-all ${
-                   activeCampus === key 
-                   ? 'bg-wic-primary text-white translate-x-1' 
-                   : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50'
-               }`}
-             >
-                 {campusData[key].name}
-             </button>
-         ))}
-      </div>
-
-      {/* Overlay Card: z-10 */}
-      <div className="absolute bottom-6 left-6 right-6 md:right-auto md:w-80 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md p-6 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 z-10">
-        <div className="flex items-start justify-between">
-           <div>
-              <h4 className="font-bold text-gray-900 dark:text-white text-lg mb-1">{current.name}</h4>
-              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">{current.address}</p>
-           </div>
-           <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg">
-              <Navigation size={20} />
-           </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-3 mt-2">
-            <a 
-              href={`https://www.amap.com/search?query=${current.coords[1]},${current.coords[0]}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded-lg transition-colors"
-            >
-              <ExternalLink size={12} />
-              高德地图
-            </a>
-            <a 
-              href={`https://map.baidu.com/search/${encodeURIComponent(current.name)}/@${current.coords[1]},${current.coords[0]},17z`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-wic-primary hover:bg-wic-secondary text-white text-xs font-bold rounded-lg transition-colors"
-            >
-              <ExternalLink size={12} />
-              百度地图
-            </a>
-        </div>
-      </div>
-    </div>
-  );
-};
+import CampusMap from '../components/CampusMap';
 
 const About: React.FC = () => {
   const { t } = useLanguage();
@@ -329,8 +175,8 @@ const About: React.FC = () => {
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('about.toc.location')}</h2>
             </div>
             
-            {/* Interactive Leaflet Map */}
-            <LocationMap />
+            {/* Interactive Campus Map */}
+            <CampusMap />
             
           </section>
 

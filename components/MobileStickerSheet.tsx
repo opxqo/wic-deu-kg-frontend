@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Smile, Sticker, Film, Clock, Star, Delete, Heart } from 'lucide-react';
+import { Smile, Sticker, Film, Clock, Star, Delete, Heart, RotateCcw } from 'lucide-react';
 import EmojiPicker, { Theme, EmojiStyle } from 'emoji-picker-react';
 import UniversalSticker from './UniversalSticker';
 import { useTheme } from '../ThemeContext';
@@ -90,28 +90,36 @@ const MobileStickerSheet: React.FC<MobileStickerSheetProps> = ({
   const [stickerPacks, setStickerPacks] = useState<StickerPack[]>([]);
   const [favorites, setFavorites] = useState<StickerType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const { theme } = useTheme();
 
-  // Load Data
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
+  const fetchPacks = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
         const packs = await stickerService.fetchStickerPacks();
         setStickerPacks(packs);
-        if (packs.length > 0 && activePackId !== 'recent' && activePackId !== 'favorites') {
-             // Only set default if not already on special tabs
-             if (activePackId === 'duck') setActivePackId(packs[0].id);
-        }
-      } catch (error) {
-        console.error("Failed to load sticker packs:", error);
-      } finally {
+        // If we have packs and current activePackId is the default 'duck' but 'duck' doesn't exist in fetched packs,
+        // switch to the first available pack.
+        setActivePackId(prev => {
+             if (prev === 'duck' && packs.length > 0 && !packs.find(p => p.id === 'duck')) {
+                 return packs[0].id;
+             }
+             return prev;
+        });
+    } catch (err) {
+        console.error("Failed to load sticker packs:", err);
+        setError("Failed to load stickers.");
+    } finally {
         setIsLoading(false);
-      }
-    };
+    }
+  }, []);
+
+  // Load Data
+  useEffect(() => {
     if (isOpen) {
-        loadData();
+        fetchPacks();
         // Load favorites
         const savedFavs = localStorage.getItem('wic_sticker_favorites');
         if (savedFavs) {
@@ -122,7 +130,7 @@ const MobileStickerSheet: React.FC<MobileStickerSheetProps> = ({
             }
         }
     }
-  }, [isOpen]);
+  }, [isOpen, fetchPacks]);
 
   // Toast Auto-dismiss
   useEffect(() => {
@@ -228,12 +236,44 @@ const MobileStickerSheet: React.FC<MobileStickerSheetProps> = ({
     if (activeTab === 'stickers') {
         if (isLoading) {
              return (
-                <div className="grid grid-cols-4 gap-4 p-4">
-                    {Array.from({length: 12}).map((_, i) => (
-                        <div key={i} className="aspect-square bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
-                    ))}
+                <div className="h-full flex flex-col">
+                    {/* Skeleton Pack Selector */}
+                    <div className="h-12 shrink-0 border-b border-gray-200 dark:border-gray-800 flex items-center px-2 overflow-x-auto scrollbar-hide bg-gray-50 dark:bg-gray-900/50 gap-2">
+                        {/* Static icons skeletons */}
+                        <div className="w-9 h-9 rounded-lg bg-gray-200 dark:bg-gray-800 animate-pulse shrink-0" />
+                        <div className="w-9 h-9 rounded-lg bg-gray-200 dark:bg-gray-800 animate-pulse shrink-0" />
+                        <div className="w-[1px] h-5 bg-gray-300 dark:bg-gray-700 mx-1 shrink-0" />
+                        {/* Pack icons skeletons */}
+                        {Array.from({length: 5}).map((_, i) => (
+                            <div key={i} className="w-9 h-9 rounded-lg bg-gray-200 dark:bg-gray-800 animate-pulse shrink-0" />
+                        ))}
+                    </div>
+
+                    {/* Skeleton Grid */}
+                    <div className="flex-1 p-2 bg-gray-100 dark:bg-[#0f1519]">
+                        <div className="grid grid-cols-4 gap-2">
+                            {Array.from({length: 16}).map((_, i) => (
+                                <div key={i} className="aspect-square bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
+                            ))}
+                        </div>
+                    </div>
                 </div>
              );
+        }
+
+        if (error) {
+            return (
+                <div className="h-full flex flex-col items-center justify-center gap-4 text-gray-500">
+                    <p>{error}</p>
+                    <button 
+                        onClick={fetchPacks}
+                        className="px-4 py-2 bg-wic-primary text-white rounded-lg font-bold text-sm shadow-md active:scale-95 transition-transform flex items-center gap-2"
+                    >
+                        <RotateCcw size={16} />
+                        Retry
+                    </button>
+                </div>
+            );
         }
 
         return (
