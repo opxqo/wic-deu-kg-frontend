@@ -17,7 +17,9 @@
     "leaflet": "1.9.4",
     "emoji-picker-react": "^4.9.2",
     "pako": "2.1.0",
-    "lottie-react": "2.4.0"
+    "lottie-react": "2.4.0",
+    "react-markdown": "9",
+    "remark-gfm": "4"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
