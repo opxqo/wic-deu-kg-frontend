@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Smile, Sticker, Film, Clock, Star, Delete, Heart, RotateCcw } from 'lucide-react';
+import { Smile, Sticker, Film, Clock, Star, Delete, Heart, RotateCcw, Send } from 'lucide-react';
 import EmojiPicker, { Theme, EmojiStyle } from 'emoji-picker-react';
 import UniversalSticker from './UniversalSticker';
 import { useTheme } from '../ThemeContext';
@@ -20,33 +20,49 @@ const StickerItem: React.FC<{
   sticker: StickerType; 
   onSend: (src: string) => void; 
   onToggleFavorite: (sticker: StickerType) => void; 
-}> = ({ sticker, onSend, onToggleFavorite }) => {
+  isSelected: boolean;
+  onSelect: (id: string | null) => void;
+}> = ({ sticker, onSend, onToggleFavorite, isSelected, onSelect }) => {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isLongPressHandled = useRef(false);
+  const isPressValid = useRef(false); // Tracks if the interaction is a valid tap (not a scroll)
 
   const startPress = () => {
     isLongPressHandled.current = false;
+    isPressValid.current = true; // Assume start of a valid tap
     timerRef.current = setTimeout(() => {
-      isLongPressHandled.current = true;
-      onToggleFavorite(sticker);
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(50);
+      // If we haven't moved/cancelled, trigger long press
+      if (isPressValid.current) {
+        isLongPressHandled.current = true;
+        onToggleFavorite(sticker);
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate(50);
+        }
       }
     }, 500); // 500ms for long press
   };
 
   const endPress = (e?: React.TouchEvent | React.MouseEvent) => {
-    // Prevent ghost clicks on touch devices if necessary, 
-    // though we handle logic manually so we just clear timer.
+    // Clear timer immediately
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
 
-    if (!isLongPressHandled.current) {
-      // If timer didn't fire, it's a tap/click
-      onSend(sticker.fileUrl);
+    // Only proceed if the press is still valid (user didn't scroll)
+    if (isPressValid.current && !isLongPressHandled.current) {
+      if (isSelected) {
+        // Step 2: Already selected, send it
+        onSend(sticker.fileUrl);
+        onSelect(null); // Deselect after sending
+      } else {
+        // Step 1: Select it
+        onSelect(sticker.id);
+      }
     }
+    
+    // Reset state
+    isPressValid.current = false;
   };
 
   const cancelPress = () => {
@@ -54,27 +70,48 @@ const StickerItem: React.FC<{
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
+    isPressValid.current = false; // Mark as invalid (scrolled or moved out)
   };
 
   return (
     <div
-      className="aspect-square flex items-center justify-center p-1 rounded-lg hover:bg-white/50 dark:hover:bg-white/5 active:scale-95 transition-transform select-none cursor-pointer relative"
+      className={`aspect-square flex items-center justify-center p-1 rounded-xl transition-all select-none cursor-pointer relative overflow-hidden ${
+        isSelected 
+        ? 'bg-wic-primary/10 ring-2 ring-wic-primary ring-offset-1 dark:ring-offset-gray-900 z-10' 
+        : 'hover:bg-white/50 dark:hover:bg-white/5 active:scale-95'
+      }`}
       onMouseDown={startPress}
       onMouseUp={endPress}
       onMouseLeave={cancelPress}
       onTouchStart={startPress}
       onTouchEnd={(e) => {
         // Prevent default to stop mouse events firing after touch
-        e.preventDefault(); 
+        // e.preventDefault(); // Commented out to allow scroll inertia, handled logic manually
         endPress(e);
       }}
-      onTouchMove={cancelPress}
+      onTouchMove={cancelPress} // Critical: Moving finger cancels the "tap"
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
       }}
     >
-      <UniversalSticker src={sticker.fileUrl} autoplay={false} loop={true} className="w-16 h-16 pointer-events-none" />
+      <UniversalSticker src={sticker.fileUrl} autoplay={isSelected} loop={true} className="w-16 h-16 pointer-events-none" />
+      
+      {/* Send Overlay Indicator */}
+      <AnimatePresence>
+        {isSelected && (
+           <motion.div 
+             initial={{ opacity: 0, scale: 0.5 }}
+             animate={{ opacity: 1, scale: 1 }}
+             exit={{ opacity: 0, scale: 0.5 }}
+             className="absolute inset-0 flex items-center justify-center bg-black/5 rounded-xl pointer-events-none"
+           >
+             <div className="bg-wic-primary text-white p-1.5 rounded-full shadow-lg">
+                <Send size={14} fill="currentColor" />
+             </div>
+           </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -89,6 +126,7 @@ const MobileStickerSheet: React.FC<MobileStickerSheetProps> = ({
   const [activePackId, setActivePackId] = useState<string>('duck'); // Default pack
   const [stickerPacks, setStickerPacks] = useState<StickerPack[]>([]);
   const [favorites, setFavorites] = useState<StickerType[]>([]);
+  const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null); // New Selection State
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -131,6 +169,11 @@ const MobileStickerSheet: React.FC<MobileStickerSheetProps> = ({
         }
     }
   }, [isOpen, fetchPacks]);
+
+  // Reset selection when changing packs or tabs
+  useEffect(() => {
+    setSelectedStickerId(null);
+  }, [activePackId, activeTab, isOpen]);
 
   // Toast Auto-dismiss
   useEffect(() => {
@@ -181,13 +224,15 @@ const MobileStickerSheet: React.FC<MobileStickerSheetProps> = ({
               );
           }
           return (
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-2 pb-20">
                   {favorites.map(sticker => (
                       <StickerItem 
                         key={sticker.id}
                         sticker={sticker}
                         onSend={onStickerClick}
                         onToggleFavorite={toggleFavorite}
+                        isSelected={selectedStickerId === sticker.id}
+                        onSelect={setSelectedStickerId}
                       />
                   ))}
               </div>
@@ -198,13 +243,15 @@ const MobileStickerSheet: React.FC<MobileStickerSheetProps> = ({
       const activePack = stickerPacks.find(p => p.id === activePackId);
       if (activePack) {
           return (
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-2 pb-20">
                   {activePack.stickers.map(sticker => (
                       <StickerItem 
                         key={sticker.id}
                         sticker={sticker}
                         onSend={onStickerClick}
                         onToggleFavorite={toggleFavorite}
+                        isSelected={selectedStickerId === sticker.id}
+                        onSelect={setSelectedStickerId}
                       />
                   ))}
               </div>
