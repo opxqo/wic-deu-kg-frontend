@@ -38,6 +38,16 @@ export interface Product {
   description?: string;
   isLiked: boolean;
   comments: FoodComment[];
+  // New fields for Review System
+  category?: string;
+  tags?: string[];
+  specs?: string[];
+  spiciness?: number; // 0-3
+  topReview?: {
+    user: string;
+    avatar: string;
+    content: string;
+  };
 }
 
 export interface FoodItem {

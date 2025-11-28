@@ -20,18 +20,50 @@ export const initialFoodData: FoodItem[] = [
     isLiked: false,
     products: [
         { 
-            id: '1-1', name: 'Signature Beef Pot', price: 25, image: 'https://picsum.photos/seed/beef/200/200', rating: 4.9, reviews: 45, likes: 120, isLiked: false, description: 'Fresh beef slices with secret spicy sauce.',
+            id: '1-1', 
+            name: 'Signature Beef Pot', 
+            price: 25, 
+            image: 'https://picsum.photos/seed/beef/200/200', 
+            rating: 4.9, 
+            reviews: 45, 
+            likes: 120, 
+            isLiked: false, 
+            category: '🔥 Chef Choice',
+            description: 'Fresh beef slices with secret spicy sauce.',
+            tags: ['🌶️ Spicy', '🥩 Fresh Meat', '👍 Must Try'],
+            topReview: { user: 'Li Ming', avatar: 'https://picsum.photos/seed/user1/40/40', content: 'The beef is incredibly tender, best in campus!' },
             comments: [
                 { id: '101', user: 'Li Ming', avatar: 'https://picsum.photos/seed/user1/40/40', content: 'Best spicy pot in campus! The beef is so fresh.', rating: 5, date: '2 days ago' },
                 { id: '102', user: 'Sarah', avatar: 'https://picsum.photos/seed/user2/40/40', content: 'A bit too oily for me, but tasty.', rating: 4, date: '1 week ago' },
             ]
         },
         { 
-            id: '1-2', name: 'Veggie Delight', price: 15, image: 'https://picsum.photos/seed/veg/200/200', rating: 4.5, reviews: 22, likes: 80, isLiked: false, description: 'Assorted seasonal vegetables.',
+            id: '1-2', 
+            name: 'Veggie Delight', 
+            price: 15, 
+            image: 'https://picsum.photos/seed/veg/200/200', 
+            rating: 4.5, 
+            reviews: 22, 
+            likes: 80, 
+            isLiked: false, 
+            category: '🥗 Healthy',
+            tags: ['🥬 Fresh', '📉 Low Cal'],
+            topReview: { user: 'Greeny', avatar: 'https://picsum.photos/seed/user4/40/40', content: 'Great variety of vegetables.' },
+            description: 'Assorted seasonal vegetables.',
             comments: []
         },
         { 
-            id: '1-3', name: 'Seafood Combo', price: 30, image: 'https://picsum.photos/seed/seafood/200/200', rating: 4.7, reviews: 30, likes: 95, isLiked: false, description: 'Shrimp, fish balls, and crab sticks.',
+            id: '1-3', 
+            name: 'Seafood Combo', 
+            price: 30, 
+            image: 'https://picsum.photos/seed/seafood/200/200', 
+            rating: 4.7, 
+            reviews: 30, 
+            likes: 95, 
+            isLiked: false, 
+            category: '🔥 Chef Choice',
+            tags: ['🦐 Seafood', '🌊 Fresh'],
+            description: 'Shrimp, fish balls, and crab sticks.',
             comments: []
         }
     ]
@@ -49,15 +81,47 @@ export const initialFoodData: FoodItem[] = [
     isLiked: false,
     products: [
         { 
-            id: '2-1', name: 'Iced Americano', price: 12, image: 'https://picsum.photos/seed/coffee/200/200', rating: 4.8, reviews: 50, likes: 200, isLiked: false, description: 'Dark roast, very refreshing.',
+            id: '2-1', 
+            name: 'Iced Americano', 
+            price: 12, 
+            image: 'https://picsum.photos/seed/coffee/200/200', 
+            rating: 4.8, 
+            reviews: 50, 
+            likes: 200, 
+            isLiked: false, 
+            category: '☕ Coffee',
+            tags: ['❄️ Iced', '⚡ Strong'],
+            topReview: { user: 'CoderX', avatar: 'https://picsum.photos/seed/dev/40/40', content: 'Keeps me awake during finals.' },
+            description: 'Dark roast, very refreshing.',
             comments: []
         },
         { 
-            id: '2-2', name: 'Matcha Latte', price: 18, image: 'https://picsum.photos/seed/matcha/200/200', rating: 4.6, reviews: 35, likes: 150, isLiked: false, description: 'Made with premium matcha powder.',
+            id: '2-2', 
+            name: 'Matcha Latte', 
+            price: 18, 
+            image: 'https://picsum.photos/seed/matcha/200/200', 
+            rating: 4.6, 
+            reviews: 35, 
+            likes: 150, 
+            isLiked: false, 
+            category: '☕ Coffee',
+            tags: ['🍵 Smooth', '🥛 Milky'],
+            description: 'Made with premium matcha powder.',
             comments: []
         },
          { 
-            id: '2-3', name: 'Cheesecake', price: 22, image: 'https://picsum.photos/seed/cake/200/200', rating: 4.9, reviews: 60, likes: 180, isLiked: false, description: 'Rich and creamy.',
+            id: '2-3', 
+            name: 'Cheesecake', 
+            price: 22, 
+            image: 'https://picsum.photos/seed/cake/200/200', 
+            rating: 4.9, 
+            reviews: 60, 
+            likes: 180, 
+            isLiked: false, 
+            category: '🍰 Dessert',
+            tags: ['🧀 Rich', '🍬 Sweet'],
+            topReview: { user: 'SweetTooth', avatar: 'https://picsum.photos/seed/sweet/40/40', content: 'Pairs perfectly with the latte!' },
+            description: 'Rich and creamy.',
             comments: [
                 { id: '201', user: 'CoffeeLover', avatar: 'https://picsum.photos/seed/user3/40/40', content: 'Goes perfect with the latte!', rating: 5, date: '3 days ago' }
             ]
@@ -76,8 +140,21 @@ export const initialFoodData: FoodItem[] = [
     likes: 156,
     isLiked: false,
     products: [
-        { id: '3-1', name: 'Original Crispy Chicken', price: 10, image: 'https://picsum.photos/seed/chk1/200/200', rating: 4.3, reviews: 100, likes: 80, isLiked: false, comments: [] },
-        { id: '3-2', name: 'Spicy Chicken Rice', price: 12, image: 'https://picsum.photos/seed/chk2/200/200', rating: 4.1, reviews: 80, likes: 60, isLiked: false, comments: [] }
+        { 
+            id: '3-1', 
+            name: 'Original Crispy Chicken', 
+            price: 10, 
+            image: 'https://picsum.photos/seed/chk1/200/200', 
+            rating: 4.3, 
+            reviews: 100, 
+            likes: 80, 
+            isLiked: false, 
+            category: '🍛 Main',
+            tags: ['🍗 Crispy', '💰 Value'],
+            topReview: { user: 'BudgetKing', avatar: 'https://picsum.photos/seed/king/40/40', content: 'Best value for money.' },
+            comments: [] 
+        },
+        { id: '3-2', name: 'Spicy Chicken Rice', price: 12, image: 'https://picsum.photos/seed/chk2/200/200', rating: 4.1, reviews: 80, likes: 60, isLiked: false, category: '🍛 Main', tags: ['🌶️ Spicy'], comments: [] }
     ]
   },
   {
@@ -92,8 +169,8 @@ export const initialFoodData: FoodItem[] = [
     likes: 92,
     isLiked: false,
     products: [
-        { id: '4-1', name: 'Chicken Caesar Salad', price: 18, image: 'https://picsum.photos/seed/salad1/200/200', rating: 4.7, reviews: 20, likes: 40, isLiked: false, comments: [] },
-        { id: '4-2', name: 'Quinoa Power Bowl', price: 22, image: 'https://picsum.photos/seed/salad2/200/200', rating: 4.8, reviews: 15, likes: 35, isLiked: false, comments: [] }
+        { id: '4-1', name: 'Chicken Caesar Salad', price: 18, image: 'https://picsum.photos/seed/salad1/200/200', rating: 4.7, reviews: 20, likes: 40, isLiked: false, category: '🥗 Salad', tags: ['🐔 Protein'], comments: [] },
+        { id: '4-2', name: 'Quinoa Power Bowl', price: 22, image: 'https://picsum.photos/seed/salad2/200/200', rating: 4.8, reviews: 15, likes: 35, isLiked: false, category: '🥗 Salad', tags: ['🌾 Superfood'], comments: [] }
     ]
   },
   {
@@ -110,10 +187,13 @@ export const initialFoodData: FoodItem[] = [
     products: [
         { 
             id: '5-1', name: 'Lamb Skewers (5pcs)', price: 15, image: 'https://picsum.photos/seed/lamb/200/200', rating: 5.0, reviews: 200, likes: 500, isLiked: true, description: 'The legendary lamb skewers.',
+            category: '🍢 Skewers',
+            tags: ['🔥 Smoky', '🐑 Tender'],
+            topReview: { user: 'PartyKing', avatar: 'https://picsum.photos/seed/user5/40/40', content: 'Must try! Flavor explodes in your mouth.' },
             comments: [{ id: '501', user: 'PartyKing', avatar: 'https://picsum.photos/seed/user5/40/40', content: 'Must try!', rating: 5, date: 'Yesterday' }]
         },
-        { id: '5-2', name: 'Grilled Eggplant', price: 12, image: 'https://picsum.photos/seed/eggplant/200/200', rating: 4.8, reviews: 150, likes: 300, isLiked: false, comments: [] },
-        { id: '5-3', name: 'Chicken Wings', price: 10, image: 'https://picsum.photos/seed/wings/200/200', rating: 4.7, reviews: 120, likes: 250, isLiked: false, comments: [] }
+        { id: '5-2', name: 'Grilled Eggplant', price: 12, image: 'https://picsum.photos/seed/eggplant/200/200', rating: 4.8, reviews: 150, likes: 300, isLiked: false, category: 'Vegetable', tags: ['🧄 Garlicky'], comments: [] },
+        { id: '5-3', name: 'Chicken Wings', price: 10, image: 'https://picsum.photos/seed/wings/200/200', rating: 4.7, reviews: 120, likes: 250, isLiked: false, category: 'Meat', tags: ['🍗 Juicy'], comments: [] }
     ]
   },
    {
@@ -128,8 +208,8 @@ export const initialFoodData: FoodItem[] = [
     likes: 330,
     isLiked: false,
     products: [
-         { id: '6-1', name: 'Beef Noodles', price: 14, image: 'https://picsum.photos/seed/noodle1/200/200', rating: 4.5, reviews: 40, likes: 100, isLiked: false, comments: [] },
-         { id: '6-2', name: 'Tomato Egg Noodles', price: 10, image: 'https://picsum.photos/seed/noodle2/200/200', rating: 4.2, reviews: 30, likes: 80, isLiked: false, comments: [] }
+         { id: '6-1', name: 'Beef Noodles', price: 14, image: 'https://picsum.photos/seed/noodle1/200/200', rating: 4.5, reviews: 40, likes: 100, isLiked: false, category: '🍜 Noodles', tags: ['🌶️ Spicy Option'], comments: [] },
+         { id: '6-2', name: 'Tomato Egg Noodles', price: 10, image: 'https://picsum.photos/seed/noodle2/200/200', rating: 4.2, reviews: 30, likes: 80, isLiked: false, category: '🍜 Noodles', tags: ['🍅 Sour & Sweet'], comments: [] }
     ]
   }
 ];
