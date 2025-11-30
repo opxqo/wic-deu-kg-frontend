@@ -1,0 +1,32 @@
+{
+  "name": "重要版本9",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3000",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.9.6",
+    "lucide-react": "^0.555.0",
+    "react": "^19.2.0",
+    "framer-motion": "^12.23.24",
+    "leaflet": "1.9.4",
+    "emoji-picker-react": "^4.9.2",
+    "pako": "2.1.0",
+    "lottie-react": "2.4.0",
+    "react-markdown": "9",
+    "remark-gfm": "4",
+    "react-map-gl": "^8.1.0",
+    "mapbox-gl": "^3.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
