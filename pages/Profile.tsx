@@ -5,12 +5,16 @@ import { User, Mail, Book, Building, Calendar, Edit2, Save, X, LogOut, Camera } 
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../UserContext';
 import { useLanguage } from '../LanguageContext';
+import authService from '../services/authService';
 
 const Profile: React.FC = () => {
-  const { user, isAuthenticated, logout, updateProfile } = useUser();
+  const { user, isAuthenticated, logout, updateProfile, uploadAvatar } = useUser();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     department: '',
@@ -35,9 +39,44 @@ const Profile: React.FC = () => {
 
   if (!user) return null;
 
-  const handleSave = () => {
-    updateProfile(formData);
-    setIsEditing(false);
+  const handleSave = async () => {
+    setIsSaving(true);
+    setError(null);
+    try {
+      await updateProfile(formData);
+      setIsEditing(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '保存失败');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    if (isEditing && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // 检查文件大小（最大2MB）
+    if (file.size > 2 * 1024 * 1024) {
+      setError('头像文件不能超过 2MB');
+      return;
+    }
+    
+    setIsSaving(true);
+    setError(null);
+    try {
+      await uploadAvatar(file);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '上传失败');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -51,7 +90,8 @@ const Profile: React.FC = () => {
     setIsEditing(false);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await authService.logout();
     logout();
     navigate('/');
   };
@@ -81,12 +121,38 @@ const Profile: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 text-center border border-gray-100 dark:border-gray-800"
             >
-              <div className="relative inline-block mb-4">
-                <div className="w-32 h-32 rounded-full ring-4 ring-white dark:ring-gray-800 overflow-hidden shadow-lg mx-auto bg-gray-200">
-                  <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+              {/* 错误提示 */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm">
+                  {error}
                 </div>
+              )}
+              
+              <div className="relative inline-block mb-4">
+                <div 
+                  className={`w-32 h-32 rounded-full ring-4 ring-white dark:ring-gray-800 overflow-hidden shadow-lg mx-auto bg-gray-200 ${isEditing ? 'cursor-pointer hover:opacity-80' : ''}`}
+                  onClick={handleAvatarClick}
+                >
+                  <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                  {isSaving && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  )}
+                </div>
+                {/* 隐藏的文件输入 */}
+                <input 
+                  type="file" 
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                />
                 {isEditing && (
-                  <button className="absolute bottom-0 right-0 p-2 bg-wic-primary text-white rounded-full shadow-lg hover:bg-wic-secondary transition-colors">
+                  <button 
+                    onClick={handleAvatarClick}
+                    className="absolute bottom-0 right-0 p-2 bg-wic-primary text-white rounded-full shadow-lg hover:bg-wic-secondary transition-colors"
+                  >
                     <Camera size={16} />
                   </button>
                 )}
@@ -155,9 +221,14 @@ const Profile: React.FC = () => {
                     </button>
                     <button 
                         onClick={handleSave}
-                        className="flex items-center gap-2 px-4 py-2 bg-wic-primary hover:bg-wic-secondary rounded-lg text-sm font-bold text-white transition-colors"
+                        disabled={isSaving}
+                        className="flex items-center gap-2 px-4 py-2 bg-wic-primary hover:bg-wic-secondary rounded-lg text-sm font-bold text-white transition-colors disabled:opacity-50"
                     >
-                        <Save size={16} />
+                        {isSaving ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Save size={16} />
+                        )}
                         {t('profile.save')}
                     </button>
                  </div>

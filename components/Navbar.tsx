@@ -1,6 +1,6 @@
 import React, { memo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Globe, User, Moon, Sun } from 'lucide-react';
+import { Menu, X, Globe, User, Moon, Sun, Home, School, MessageCircle, Utensils, Library } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../LanguageContext';
 import { useTheme } from '../ThemeContext';
@@ -237,12 +237,12 @@ const Navbar: React.FC = () => {
     setLanguage(language === 'zh' ? 'en' : 'zh');
   };
 
-  const navLinks: { name: string; path: string; isExternal?: boolean }[] = [
-    { name: t('nav.home'), path: '/' },
-    { name: t('nav.about'), path: '/about' },
-    { name: t('nav.chat'), path: '/chat' },
-    { name: t('nav.food'), path: '/food' },
-    { name: t('nav.library'), path: '/library' },
+  const navLinks: { name: string; path: string; icon: React.ElementType; isExternal?: boolean }[] = [
+    { name: t('nav.home'), path: '/', icon: Home },
+    { name: t('nav.about'), path: '/about', icon: School },
+    { name: t('nav.chat'), path: '/chat', icon: MessageCircle },
+    { name: t('nav.food'), path: '/food', icon: Utensils },
+    { name: t('nav.library'), path: '/library', icon: Library },
   ];
 
   // Logic: Transparent on Home top, White/Dark on scroll or other pages
@@ -285,7 +285,7 @@ const Navbar: React.FC = () => {
 
           {/* Desktop Nav - Centered */}
           <div className="hidden md:flex absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <div className="flex items-center space-x-8">
+            <div className="flex items-center space-x-4">
               {navLinks.map((link) => (
                 link.isExternal ? (
                   <a
@@ -293,19 +293,20 @@ const Navbar: React.FC = () => {
                     href={link.path}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
                       isTransparentState 
                           ? 'text-white/90 hover:text-white hover:bg-white/10' 
                           : 'text-gray-600 dark:text-gray-300 hover:text-wic-primary hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
+                    <link.icon size={16} />
                     {link.name}
                   </a>
                 ) : (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
                     location.pathname === link.path
                       ? (isTransparentState 
                           ? 'bg-white/20 text-white backdrop-blur-sm shadow-sm' 
@@ -315,6 +316,7 @@ const Navbar: React.FC = () => {
                           : 'text-gray-600 dark:text-gray-300 hover:text-wic-primary hover:bg-gray-50 dark:hover:bg-gray-800')
                   }`}
                 >
+                  <link.icon size={16} />
                   {link.name}
                 </Link>
                 )
@@ -425,10 +427,11 @@ const Navbar: React.FC = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`block px-3 py-4 rounded-md text-base font-medium text-center ${
+                    className={`flex items-center justify-center gap-2 px-3 py-4 rounded-md text-base font-medium text-center ${
                       'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
+                    <link.icon size={18} />
                     {link.name}
                   </a>
                 ) : (
@@ -436,12 +439,13 @@ const Navbar: React.FC = () => {
                   key={link.path}
                   to={link.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`block px-3 py-4 rounded-md text-base font-medium text-center ${
+                  className={`flex items-center justify-center gap-2 px-3 py-4 rounded-md text-base font-medium text-center ${
                       location.pathname === link.path 
                       ? 'text-wic-primary bg-wic-primary/10 dark:bg-wic-primary/20 dark:text-wic-accent' 
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
+                  <link.icon size={18} />
                   {link.name}
                 </Link>
                 )

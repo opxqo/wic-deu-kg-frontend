@@ -5,11 +5,12 @@ import { Link } from 'react-router-dom';
 import { 
   MessageCircle, Utensils, BookOpen, ChevronRight, Sparkles, 
   MessageSquareQuote, TrendingUp, Building2, Cpu, Stethoscope, Wrench, 
-  Languages, Palette, Car, X, MapPin, Users, Calendar
+  Languages, Palette, Car, X, MapPin, Users, Calendar, Loader2
 } from 'lucide-react';
 import StatsSection from '../components/StatsSection';
 import HeroSection from '../components/HeroSection';
 import { useLanguage } from '../LanguageContext';
+import departmentService, { DepartmentVO } from '../services/departmentService';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -30,95 +31,144 @@ const itemVariants = {
   }
 };
 
-// Enhanced Data Structure for Expandable Cards
-const departmentsData = [
+// 图标映射表：根据后端返回的 icon 字段名匹配前端图标
+const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
+  'Cpu': Cpu,
+  'Stethoscope': Stethoscope,
+  'TrendingUp': TrendingUp,
+  'Palette': Palette,
+  'Building2': Building2,
+  'Languages': Languages,
+  'Wrench': Wrench,
+  'Car': Car,
+};
+
+// 获取图标组件
+const getIconComponent = (iconName: string): React.ComponentType<{ size?: number }> => {
+  return iconMap[iconName] || Cpu; // 默认返回 Cpu 图标
+};
+
+// 硬编码的学部数据（作为后备数据）
+const fallbackDepartmentsData = [
   { 
-    id: 'dept-1',
-    zh: "信息工程学部", 
-    en: "Information Engineering", 
-    icon: Cpu,
+    id: 1,
+    code: 'dept-1',
+    nameZh: "信息工程学部", 
+    nameEn: "Information Engineering", 
+    icon: "Cpu",
     onlineCount: 428,
-    hotMajor: "软件工程",
-    counselors: ["张伟", "李娜", "王强"],
+    hotMajorZh: "软件工程",
+    hotMajorEn: "Software Engineering",
+    counselors: [{id: 1, name: "张伟", avatar: "", title: ""}, {id: 2, name: "李娜", avatar: "", title: ""}, {id: 3, name: "王强", avatar: "", title: ""}],
     location: "实验楼 B-402",
-    description: "拥抱数字化未来，培养全栈开发与人工智能领域的顶尖人才。"
+    descriptionZh: "拥抱数字化未来，培养全栈开发与人工智能领域的顶尖人才。",
+    descriptionEn: "Embrace the digital future, nurturing top talents in full-stack development and AI.",
+    sortOrder: 1
   },
   { 
-    id: 'dept-2',
-    zh: "医学部", 
-    en: "Medicine", 
-    icon: Stethoscope,
+    id: 2,
+    code: 'dept-2',
+    nameZh: "医学部", 
+    nameEn: "Medicine", 
+    icon: "Stethoscope",
     onlineCount: 356,
-    hotMajor: "护理学",
-    counselors: ["陈医生", "刘护士长"],
+    hotMajorZh: "护理学",
+    hotMajorEn: "Nursing",
+    counselors: [{id: 4, name: "陈医生", avatar: "", title: ""}, {id: 5, name: "刘护士长", avatar: "", title: ""}],
     location: "医学中心 3F",
-    description: "仁心仁术，专注于现代医疗护理技术与生命科学研究。"
+    descriptionZh: "仁心仁术，专注于现代医疗护理技术与生命科学研究。",
+    descriptionEn: "With compassion and skill, focusing on modern healthcare and life sciences.",
+    sortOrder: 2
   },
   { 
-    id: 'dept-3',
-    zh: "经济与管理学部", 
-    en: "Economics & Management", 
-    icon: TrendingUp,
+    id: 3,
+    code: 'dept-3',
+    nameZh: "经济与管理学部", 
+    nameEn: "Economics & Management", 
+    icon: "TrendingUp",
     onlineCount: 210,
-    hotMajor: "会计学",
-    counselors: ["赵敏", "周杰"],
+    hotMajorZh: "会计学",
+    hotMajorEn: "Accounting",
+    counselors: [{id: 6, name: "赵敏", avatar: "", title: ""}, {id: 7, name: "周杰", avatar: "", title: ""}],
     location: "文科楼 A-201",
-    description: "培养具有全球视野的商业领袖与金融精英。"
+    descriptionZh: "培养具有全球视野的商业领袖与金融精英。",
+    descriptionEn: "Cultivating business leaders and financial elites with global vision.",
+    sortOrder: 3
   },
   { 
-    id: 'dept-4',
-    zh: "艺术与设计学部", 
-    en: "Art & Design", 
-    icon: Palette,
+    id: 4,
+    code: 'dept-4',
+    nameZh: "艺术与设计学部", 
+    nameEn: "Art & Design", 
+    icon: "Palette",
     onlineCount: 189,
-    hotMajor: "环境设计",
-    counselors: ["Wu Art", "Teacher Li"],
+    hotMajorZh: "环境设计",
+    hotMajorEn: "Environmental Design",
+    counselors: [{id: 8, name: "Wu Art", avatar: "", title: ""}, {id: 9, name: "Teacher Li", avatar: "", title: ""}],
     location: "创意大楼 Studio X",
-    description: "激发无限创意，用设计美学重塑生活空间。"
+    descriptionZh: "激发无限创意，用设计美学重塑生活空间。",
+    descriptionEn: "Inspire unlimited creativity, reshaping life spaces with design aesthetics.",
+    sortOrder: 4
   },
   { 
-    id: 'dept-5',
-    zh: "城建学部", 
-    en: "Urban Construction", 
-    icon: Building2,
+    id: 5,
+    code: 'dept-5',
+    nameZh: "城建学部", 
+    nameEn: "Urban Construction", 
+    icon: "Building2",
     onlineCount: 145,
-    hotMajor: "土木工程",
-    counselors: ["孙工", "钱工"],
+    hotMajorZh: "土木工程",
+    hotMajorEn: "Civil Engineering",
+    counselors: [{id: 10, name: "孙工", avatar: "", title: ""}, {id: 11, name: "钱工", avatar: "", title: ""}],
     location: "建工楼 505",
-    description: "建设智慧城市，打造绿色可持续的居住环境。"
+    descriptionZh: "建设智慧城市，打造绿色可持续的居住环境。",
+    descriptionEn: "Building smart cities, creating green and sustainable living environments.",
+    sortOrder: 5
   },
   { 
-    id: 'dept-6',
-    zh: "外语学部", 
-    en: "Foreign Languages", 
-    icon: Languages,
+    id: 6,
+    code: 'dept-6',
+    nameZh: "外语学部", 
+    nameEn: "Foreign Languages", 
+    icon: "Languages",
     onlineCount: 132,
-    hotMajor: "英语翻译",
-    counselors: ["Ms. Smith", "Mr. Brown"],
+    hotMajorZh: "英语翻译",
+    hotMajorEn: "English Translation",
+    counselors: [{id: 12, name: "Ms. Smith", avatar: "", title: ""}, {id: 13, name: "Mr. Brown", avatar: "", title: ""}],
     location: "国际交流中心",
-    description: "连接世界的桥梁，培养跨文化交流的高级人才。"
+    descriptionZh: "连接世界的桥梁，培养跨文化交流的高级人才。",
+    descriptionEn: "A bridge connecting the world, nurturing advanced talents in cross-cultural communication.",
+    sortOrder: 6
   },
   { 
-    id: 'dept-7',
-    zh: "机电工程学部", 
-    en: "Mech & Elec Eng", 
-    icon: Wrench,
+    id: 7,
+    code: 'dept-7',
+    nameZh: "机电工程学部", 
+    nameEn: "Mech & Elec Eng", 
+    icon: "Wrench",
     onlineCount: 167,
-    hotMajor: "机械自动化",
-    counselors: ["郑工"],
+    hotMajorZh: "机械自动化",
+    hotMajorEn: "Mechanical Automation",
+    counselors: [{id: 14, name: "郑工", avatar: "", title: ""}],
     location: "实训中心 C区",
-    description: "大国工匠的摇篮，专注于智能制造与自动化控制。"
+    descriptionZh: "大国工匠的摇篮，专注于智能制造与自动化控制。",
+    descriptionEn: "The cradle of great craftsmen, focusing on intelligent manufacturing and automation.",
+    sortOrder: 7
   },
   { 
-    id: 'dept-8',
-    zh: "汽车与电子工程", 
-    en: "Auto & Electronic Eng", 
-    icon: Car,
+    id: 8,
+    code: 'dept-8',
+    nameZh: "汽车与电子工程", 
+    nameEn: "Auto & Electronic Eng", 
+    icon: "Car",
     onlineCount: 98,
-    hotMajor: "车辆工程",
-    counselors: ["马斯克(客座)"],
+    hotMajorZh: "车辆工程",
+    hotMajorEn: "Vehicle Engineering",
+    counselors: [{id: 15, name: "马斯克(客座)", avatar: "", title: ""}],
     location: "汽车实验中心",
-    description: "探索新能源与自动驾驶技术的前沿领域。"
+    descriptionZh: "探索新能源与自动驾驶技术的前沿领域。",
+    descriptionEn: "Exploring the frontiers of new energy and autonomous driving technology.",
+    sortOrder: 8
   }
 ];
 
@@ -146,7 +196,9 @@ const BentoCard: React.FC<{
 );
 
 const Home: React.FC = () => {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [departments, setDepartments] = useState<DepartmentVO[]>([]);
+  const [loading, setLoading] = useState(true);
   const { scrollY } = useScroll(); // Use global window scroll for the stats parallax
   const { t, language } = useLanguage();
 
@@ -154,6 +206,27 @@ const Home: React.FC = () => {
   // Slightly adjusted values for better mobile/desktop sync
   const statsY = useTransform(scrollY, [0, 800], [200, -50]); 
   const statsOpacity = useTransform(scrollY, [0, 100, 400], [0, 0, 1]);
+
+  // 从后端获取学部数据
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        setLoading(true);
+        const result = await departmentService.getAllDepartments();
+        if (result.code === 200 && result.data) {
+          setDepartments(result.data);
+        }
+      } catch (error) {
+        console.error('获取学部列表失败:', error);
+        // 使用后备数据
+        setDepartments(fallbackDepartmentsData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDepartments();
+  }, []);
 
   // Handle body scroll locking when modal is open
   useEffect(() => {
@@ -293,7 +366,16 @@ const Home: React.FC = () => {
               
               {/* Grid of Small Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {departmentsData.map((dept) => (
+                  {loading ? (
+                    // 加载状态
+                    <div className="col-span-full flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-wic-primary" />
+                      <span className="ml-2 text-gray-500 dark:text-gray-400">加载学部信息...</span>
+                    </div>
+                  ) : (
+                    departments.map((dept) => {
+                      const IconComponent = getIconComponent(dept.icon);
+                      return (
                       <motion.div
                         layoutId={`card-container-${dept.id}`}
                         key={dept.id}
@@ -309,11 +391,11 @@ const Home: React.FC = () => {
                                     layoutId={`card-icon-${dept.id}`}
                                     className="w-12 h-12 bg-wic-primary/5 dark:bg-wic-primary/20 rounded-2xl flex items-center justify-center text-wic-primary dark:text-wic-accent shrink-0"
                                   >
-                                      <dept.icon size={24} />
+                                      <IconComponent size={24} />
                                   </motion.div>
                                   <div className="flex-1 min-w-0">
                                       <motion.h3 layoutId={`card-title-${dept.id}`} className="font-bold text-gray-900 dark:text-white truncate text-lg">
-                                        {language === 'zh' ? dept.zh : dept.en}
+                                        {language === 'zh' ? dept.nameZh : dept.nameEn}
                                       </motion.h3>
                                   </div>
                               </div>
@@ -322,7 +404,7 @@ const Home: React.FC = () => {
                                 layoutId={`card-desc-${dept.id}`}
                                 className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4"
                               >
-                                {dept.description}
+                                {language === 'zh' ? dept.descriptionZh : dept.descriptionEn}
                               </motion.p>
 
                               {/* Dashboard Footer (Small Card) */}
@@ -335,19 +417,21 @@ const Home: React.FC = () => {
                                       <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 tabular-nums">{dept.onlineCount} Online</span>
                                   </div>
                                   <div className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase rounded-md tracking-wider">
-                                      {dept.hotMajor}
+                                      {language === 'zh' ? dept.hotMajorZh : dept.hotMajorEn}
                                   </div>
                               </div>
                           </motion.div>
                       </motion.div>
-                  ))}
+                    );})
+                  )}
               </div>
 
               {/* Expanded Modal */}
               <AnimatePresence>
                   {selectedId && (() => {
-                      const selectedDept = departmentsData.find(d => d.id === selectedId);
+                      const selectedDept = departments.find(d => d.id === selectedId);
                       if (!selectedDept) return null;
+                      const SelectedIcon = getIconComponent(selectedDept.icon);
                       return (
                           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                               {/* Backdrop */}
@@ -381,12 +465,12 @@ const Home: React.FC = () => {
                                                 layoutId={`card-icon-${selectedId}`}
                                                 className="w-16 h-16 bg-wic-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-wic-primary/30 shrink-0"
                                               >
-                                                  <selectedDept.icon size={32} />
+                                                  <SelectedIcon size={32} />
                                               </motion.div>
                                               
                                               <div>
                                                   <motion.h2 layoutId={`card-title-${selectedId}`} className="text-2xl font-bold text-gray-900 dark:text-white leading-tight">
-                                                    {language === 'zh' ? selectedDept.zh : selectedDept.en}
+                                                    {language === 'zh' ? selectedDept.nameZh : selectedDept.nameEn}
                                                   </motion.h2>
                                                   <motion.div 
                                                     initial={{ opacity: 0 }} 
@@ -408,7 +492,7 @@ const Home: React.FC = () => {
                                             layoutId={`card-desc-${selectedId}`}
                                             className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg mb-8"
                                           >
-                                              {selectedDept.description}
+                                              {language === 'zh' ? selectedDept.descriptionZh : selectedDept.descriptionEn}
                                           </motion.p>
                                       </motion.div>
 
@@ -431,7 +515,7 @@ const Home: React.FC = () => {
                                                   <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">
                                                       <TrendingUp size={14} /> Hot Major
                                                   </div>
-                                                  <div className="font-bold text-gray-900 dark:text-white text-sm md:text-base">{selectedDept.hotMajor}</div>
+                                                  <div className="font-bold text-gray-900 dark:text-white text-sm md:text-base">{language === 'zh' ? selectedDept.hotMajorZh : selectedDept.hotMajorEn}</div>
                                               </div>
                                           </div>
 
@@ -442,12 +526,16 @@ const Home: React.FC = () => {
                                                   Counselor Team
                                               </h4>
                                               <div className="flex flex-wrap gap-3">
-                                                  {selectedDept.counselors.map((name, i) => (
-                                                      <div key={i} className="flex items-center gap-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 pr-4 rounded-full p-1.5 shadow-sm">
-                                                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-300 ring-2 ring-white dark:ring-gray-700">
-                                                              {name[0]}
-                                                          </div>
-                                                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{name}</span>
+                                                  {selectedDept.counselors?.map((counselor, i) => (
+                                                      <div key={counselor.id || i} className="flex items-center gap-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 pr-4 rounded-full p-1.5 shadow-sm">
+                                                          {counselor.avatar ? (
+                                                            <img src={counselor.avatar} alt={counselor.name} className="w-8 h-8 rounded-full object-cover ring-2 ring-white dark:ring-gray-700" />
+                                                          ) : (
+                                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-300 ring-2 ring-white dark:ring-gray-700">
+                                                                {counselor.name[0]}
+                                                            </div>
+                                                          )}
+                                                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{counselor.name}</span>
                                                       </div>
                                                   ))}
                                               </div>
@@ -455,10 +543,13 @@ const Home: React.FC = () => {
 
                                           {/* Actions */}
                                           <div className="grid grid-cols-2 gap-4 pt-6 mt-4 border-t border-gray-100 dark:border-gray-800">
-                                              <button className="flex items-center justify-center gap-2 py-4 rounded-xl bg-wic-primary text-white font-bold hover:bg-wic-secondary transition-all shadow-lg shadow-wic-primary/20 active:scale-95">
+                                              <Link 
+                                                to={`/chat?dept=${selectedDept.id}`}
+                                                className="flex items-center justify-center gap-2 py-4 rounded-xl bg-wic-primary text-white font-bold hover:bg-wic-secondary transition-all shadow-lg shadow-wic-primary/20 active:scale-95"
+                                              >
                                                   <MessageCircle size={18} />
                                                   Enter Chat Group
-                                              </button>
+                                              </Link>
                                               <button className="flex items-center justify-center gap-2 py-4 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95">
                                                   <Calendar size={18} />
                                                   View Schedule
