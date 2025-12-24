@@ -181,17 +181,18 @@ const ChatRightPanel: React.FC<ChatRightPanelProps> = ({ isOpen, onEmojiClick, o
       return;
     }
 
-    setSelectedStickerId(prev => {
-      if (prev === sticker.id) {
-        // 已选中状态下再次点击 -> 发送 / Already selected, send it
-        onStickerClick(sticker.fileUrl);
-        return null;
-      } else {
-        // 未选中 -> 选中 / Not selected, select it
-        return sticker.id;
-      }
-    });
-  }, [onStickerClick]);
+    // 直接判断当前选中状态，不在 setState 回调中执行副作用
+    // Check current selection directly, avoid side effects in setState callback
+    if (selectedStickerId === sticker.id) {
+      // 已选中状态下再次点击 -> 发送并取消选中
+      // Already selected, send and deselect
+      onStickerClick(sticker.fileUrl);
+      setSelectedStickerId(null);
+    } else {
+      // 未选中 -> 选中 / Not selected, select it
+      setSelectedStickerId(sticker.id);
+    }
+  }, [onStickerClick, selectedStickerId]);
 
   // Helper to render the content based on activePackId
   const renderStickerContent = () => {
