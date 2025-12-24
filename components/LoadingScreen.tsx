@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTheme } from '../ThemeContext';
 
 interface LoadingScreenProps {
   onFinished: () => void;
@@ -15,7 +16,6 @@ const logoShapes = [
   { d: "M62.9 116.6L43.8 116.6C46.9 101.6 53.6 88 62.9 76.5L62.9 116.6Z" },
   { d: "M62.9 177.5L51.5 177.5C45.3 164.9 41.8 150.8 41.8 135.8C41.8 131.6 42.1 127.6 42.6 123.6L62.9 123.6L62.9 177.5Z" },
   { d: "M69.9 68.8C78.1 60.8 87.7 54.2 98.3 49.6L98.3 116.6L69.9 116.6L69.9 68.8Z" },
-  // Converted rect to path for consistency
   { d: "M69.9 123.6 H98.3 V177.5 H69.9 Z" },
   { d: "M55.4 184.5L98.4 184.5L98.4 222.1C80.4 214.3 65.4 201.1 55.4 184.5Z" },
   { d: "M105.3 142.6L136.3 142.6L136.3 229.9C136.1 229.9 136 229.9 135.8 229.9C125.1 229.9 114.8 228.1 105.3 224.8L105.3 142.6Z" },
@@ -50,6 +50,14 @@ const logoShapes = [
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinished }) => {
   const [isExiting, setIsExiting] = useState(false);
+  const { theme } = useTheme();
+
+  // Theme-based colors
+  const isDark = theme === 'dark';
+  const bgColor = isDark ? '#0f172a' : '#fdfdfd';
+  const primaryColor = isDark ? '#6ee7b7' : '#394E28';
+  const secondaryColor = isDark ? '#0f172a' : '#FFFFFF';
+  const textColor = isDark ? '#e2e8f0' : '#394E28';
 
   useEffect(() => {
     const exitTimer = setTimeout(() => {
@@ -67,14 +75,14 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinished }) => {
   }, [onFinished]);
 
   return (
-    <div 
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#fdfdfd] transition-opacity duration-1000 ease-[cubic-bezier(0.76,0,0.24,1)] ${
-        isExiting ? 'opacity-0 pointer-events-none' : 'opacity-100'
-      }`}
+    <div
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-1000 ease-[cubic-bezier(0.76,0,0.24,1)] ${isExiting ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+      style={{ backgroundColor: bgColor }}
     >
       <div className="relative w-56 h-56 md:w-72 md:h-72 flex items-center justify-center">
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 271.8 271.8"
           className="w-full h-full drop-shadow-2xl"
         >
@@ -94,8 +102,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinished }) => {
                 }
                 
                 .anim-shape {
-                  fill: #394E28;
-                  stroke: #394E28;
                   stroke-width: 0.8px;
                   stroke-linecap: round;
                   stroke-linejoin: round;
@@ -103,7 +109,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinished }) => {
                   stroke-dashoffset: 1000;
                   fill-opacity: 0;
                   opacity: 0;
-                  /* Animation is applied via inline style for staggering */
                 }
 
                 @keyframes popIn {
@@ -128,26 +133,24 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinished }) => {
                     opacity: 1;
                     stroke-dashoffset: 0;
                     fill-opacity: 1;
-                    stroke-width: 0; /* Optional: hide stroke when filled */
+                    stroke-width: 0;
                   }
                 }
               `}
             </style>
           </defs>
 
-          {/* Background Outer Circle (Green) */}
-          <circle className="anim-circle-outer" cx="135.9" cy="135.9" r="135.9" fill="#394E28"></circle>
-          
-          {/* Inner Background Circle (White) */}
-          <circle className="anim-circle-inner" cx="135.9" cy="135.9" r="130.7" fill="#FFFFFF"></circle>
-          
-          {/* Logo Content - Sequentially Animated Shapes */}
+          <circle className="anim-circle-outer" cx="135.9" cy="135.9" r="135.9" fill={primaryColor}></circle>
+          <circle className="anim-circle-inner" cx="135.9" cy="135.9" r="130.7" fill={secondaryColor}></circle>
+
           <g>
             {logoShapes.map((shape, index) => (
               <path
                 key={index}
                 d={shape.d}
                 className="anim-shape"
+                fill={primaryColor}
+                stroke={primaryColor}
                 style={{
                   animation: `sequentialDraw 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards`,
                   animationDelay: `${0.8 + index * 0.05}s`
@@ -160,35 +163,36 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinished }) => {
 
       <div className="mt-12 flex flex-col items-center z-10">
         <div className="overflow-hidden opacity-0 translate-y-8"
-             style={{ 
-                 animation: 'textSlideUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
-                 animationDelay: '3.0s' 
-             }}>
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              viewBox="0 0 366.015625 66.5625" 
-              className="w-48 md:w-72 h-auto"
-            >
-                <g>
-                    <text transform="translate(-3.75, 0.234375)">
-                        <tspan x="0" y="51.09375" fontSize="60" fill="#394E28" fontFamily="草檀斋毛泽东字体, MaoZedong, STKaiti, KaiTi, serif" letterSpacing="2">武汉城市学院</tspan>
-                    </text>
-                </g>
-            </svg>
+          style={{
+            animation: 'textSlideUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+            animationDelay: '3.0s'
+          }}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 366.015625 66.5625"
+            className="w-48 md:w-72 h-auto"
+          >
+            <g>
+              <text transform="translate(-3.75, 0.234375)">
+                <tspan x="0" y="51.09375" fontSize="60" fill={textColor} fontFamily="草檀斋毛泽东字体, MaoZedong, STKaiti, KaiTi, serif" letterSpacing="2">武汉城市学院</tspan>
+              </text>
+            </g>
+          </svg>
         </div>
         <div className="overflow-hidden mt-3">
-            <p 
-                className="text-sm md:text-lg text-swu-light font-medium tracking-[0.3em] uppercase opacity-0 translate-y-4"
-                style={{ 
-                    animation: 'textSlideUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
-                    animationDelay: '3.2s' 
-                }}
-            >
-                City University of Wuhan
-            </p>
+          <p
+            className="text-sm md:text-lg font-medium tracking-[0.3em] uppercase opacity-0 translate-y-4"
+            style={{
+              animation: 'textSlideUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+              animationDelay: '3.2s',
+              color: textColor
+            }}
+          >
+            City University of Wuhan
+          </p>
         </div>
       </div>
-      
+
       <style>{`
         @keyframes textSlideUp {
             to {

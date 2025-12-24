@@ -275,12 +275,23 @@ const Navbar: React.FC = () => {
         <div className={`relative flex items-center justify-between transition-all duration-500 ease-in-out ${navHeight}`}>
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            {/* Swap logos to maintain contrast against the current background */}
-            {(isTransparentState || theme === 'dark') ? (
-              <LightUniversityLogo className={`${logoSize} w-auto object-contain transition-all duration-500 ease-in-out transform group-hover:scale-105`} />
-            ) : (
-              <DarkUniversityLogo className={`${logoSize} w-auto object-contain transition-all duration-500 ease-in-out transform group-hover:scale-105`} />
-            )}
+            {/* Crossfade logos - both render simultaneously with opacity transition */}
+            <div className="relative">
+              <motion.div
+                animate={{ opacity: (isTransparentState || theme === 'dark') ? 1 : 0 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="relative z-10"
+              >
+                <LightUniversityLogo className={`${logoSize} w-auto object-contain transition-all duration-500 ease-in-out transform group-hover:scale-105`} />
+              </motion.div>
+              <motion.div
+                animate={{ opacity: (isTransparentState || theme === 'dark') ? 0 : 1 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="absolute inset-0 z-0"
+              >
+                <DarkUniversityLogo className={`${logoSize} w-auto object-contain transition-all duration-500 ease-in-out transform group-hover:scale-105`} />
+              </motion.div>
+            </div>
           </Link>
 
           {/* Desktop Nav - Centered */}

@@ -45,7 +45,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const handleLoadingFinished = () => {
@@ -57,32 +57,38 @@ const App: React.FC = () => {
   }
 
   return (
+    <LanguageProvider>
+      <UserProvider>
+        <MobileMenuProvider>
+          <HashRouter>
+            <ScrollToTop />
+            <Layout>
+              <AnimatePresence mode="wait">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/chat" element={<Chat />} />
+                  <Route path="/food" element={<Food />} />
+                  <Route path="/food/:id" element={<FoodDetail />} />
+                  <Route path="/library" element={<Library />} />
+                  <Route path="/seniors" element={<Seniors />} />
+                  <Route path="/gallery" element={<Gallery />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Routes>
+              </AnimatePresence>
+            </Layout>
+          </HashRouter>
+        </MobileMenuProvider>
+      </UserProvider>
+    </LanguageProvider>
+  );
+};
+
+const App: React.FC = () => {
+  return (
     <ThemeProvider>
-      <LanguageProvider>
-        <UserProvider>
-          <MobileMenuProvider>
-            <HashRouter>
-              <ScrollToTop />
-              <Layout>
-                <AnimatePresence mode="wait">
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/chat" element={<Chat />} />
-                    <Route path="/food" element={<Food />} />
-                    <Route path="/food/:id" element={<FoodDetail />} />
-                    <Route path="/library" element={<Library />} />
-                    <Route path="/seniors" element={<Seniors />} />
-                    <Route path="/gallery" element={<Gallery />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/profile" element={<Profile />} />
-                  </Routes>
-                </AnimatePresence>
-              </Layout>
-            </HashRouter>
-          </MobileMenuProvider>
-        </UserProvider>
-      </LanguageProvider>
+      <AppContent />
     </ThemeProvider>
   );
 };
