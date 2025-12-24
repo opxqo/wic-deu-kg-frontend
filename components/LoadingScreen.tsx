@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '../ThemeContext';
+import MeteorEffect from './MeteorEffect';
 
 interface LoadingScreenProps {
   onFinished: () => void;
@@ -80,7 +81,10 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinished }) => {
         }`}
       style={{ backgroundColor: bgColor }}
     >
-      <div className="relative w-56 h-56 md:w-72 md:h-72 flex items-center justify-center">
+      {/* Meteor effect for dark mode */}
+      {isDark && <MeteorEffect />}
+
+      <div className="relative w-56 h-56 md:w-72 md:h-72 flex items-center justify-center z-10">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 271.8 271.8"
