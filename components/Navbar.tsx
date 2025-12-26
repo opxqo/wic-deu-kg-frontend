@@ -2,6 +2,8 @@ import React, { memo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Globe, User, Moon, Sun, Home, School, MessageCircle, Utensils, Library, Gamepad2 } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion';
+import { cn } from "@/lib/utils"
+import { ExpandingNavbar } from './ExpandingNavbar';
 import { useLanguage } from '../LanguageContext';
 import { useTheme } from '../ThemeContext';
 import { useUser } from '../UserContext';
@@ -296,49 +298,7 @@ const Navbar: React.FC = () => {
 
                     {/* Desktop Nav - Centered */}
                     <div className="hidden md:flex absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                        <div className="flex items-center space-x-2">
-                            {navLinks.map((link) => (
-                                link.isExternal ? (
-                                    <a
-                                        key={link.path}
-                                        href={link.path}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className={`flex items-center gap-1.5 pl-2 pr-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${isTransparentState
-                                            ? 'text-white/90 hover:text-white hover:bg-white/10'
-                                            : 'text-gray-600 dark:text-gray-300 hover:text-wic-primary hover:bg-gray-50 dark:hover:bg-gray-800'
-                                            }`}
-                                    >
-                                        {link.iconUrl ? (
-                                            <img src={link.iconUrl} alt="" className="h-4 w-auto object-contain" />
-                                        ) : link.icon ? (
-                                            <link.icon size={14} />
-                                        ) : null}
-                                        {link.name}
-                                    </a>
-                                ) : (
-                                    <Link
-                                        key={link.path}
-                                        to={link.path}
-                                        className={`flex items-center gap-1.5 pl-2 pr-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${location.pathname === link.path
-                                            ? (isTransparentState
-                                                ? 'bg-white/20 text-white backdrop-blur-sm shadow-sm'
-                                                : 'bg-wic-primary/10 text-wic-primary dark:bg-wic-primary/20 dark:text-wic-accent shadow-sm')
-                                            : (isTransparentState
-                                                ? 'text-white/90 hover:text-white hover:bg-white/10'
-                                                : 'text-gray-600 dark:text-gray-300 hover:text-wic-primary hover:bg-gray-50 dark:hover:bg-gray-800')
-                                            }`}
-                                    >
-                                        {link.iconUrl ? (
-                                            <img src={link.iconUrl} alt="" className="h-4 w-auto object-contain" />
-                                        ) : link.icon ? (
-                                            <link.icon size={14} />
-                                        ) : null}
-                                        {link.name}
-                                    </Link>
-                                )
-                            ))}
-                        </div>
+                        <ExpandingNavbar links={navLinks} isTransparent={isTransparentState} />
                     </div>
 
                     {/* User / Action (Desktop) */}

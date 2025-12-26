@@ -2,7 +2,7 @@
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowDown, MessageCircle, Utensils, BookOpen, MapPin } from 'lucide-react';
+import { Sparkles, MessageCircle, Utensils, BookOpen, MapPin, ArrowDown } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 
 const HeroSection: React.FC = () => {
@@ -182,10 +182,29 @@ const HeroSection: React.FC = () => {
       {/* Scroll Indicator (Desktop Only) */}
       <motion.div
         style={{ opacity }}
-        className="hidden md:block absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 text-white/50 animate-bounce"
+        className="hidden md:block absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20"
       >
-        <ArrowDown size={24} />
+        <div className="flex flex-col items-center gap-2 animate-float-slow">
+          {/* Mouse Outer Body */}
+          <div className="w-[24px] h-[40px] rounded-[14px] border-[2px] border-white/90 relative shadow-[inset_0_0_6px_rgba(0,0,0,0.2),0_2px_10px_rgba(0,0,0,0.3)] backdrop-blur-sm">
+            {/* Scroll Wheel */}
+            <div className="absolute left-1/2 -translate-x-1/2 top-[6px] w-[6px] h-[10px] bg-white rounded-[4px] shadow-[0_1px_3px_rgba(0,0,0,0.3)]"></div>
+          </div>
+          <span className="text-white text-[12px] tracking-[3px] uppercase font-semibold opacity-90 text-shadow-sm font-sans">Scroll</span>
+        </div>
       </motion.div>
+      <style>{`
+        @keyframes float-overall {
+          from { transform: translateY(0); }
+          to { transform: translateY(10px); }
+        }
+        .animate-float-slow {
+          animation: float-overall 3s ease-in-out infinite alternate;
+        }
+        .text-shadow-sm {
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+        }
+      `}</style>
     </section>
   );
 };
