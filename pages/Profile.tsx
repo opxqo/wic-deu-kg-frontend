@@ -7,6 +7,13 @@ import { useUser } from '../UserContext';
 import { useLanguage } from '../LanguageContext';
 import authService from '../services/authService';
 
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+
 const Profile: React.FC = () => {
   const { user, isAuthenticated, logout, updateProfile, uploadAvatar } = useUser();
   const { t } = useLanguage();
@@ -61,13 +68,13 @@ const Profile: React.FC = () => {
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     // 检查文件大小（最大2MB）
     if (file.size > 2 * 1024 * 1024) {
       setError('头像文件不能超过 2MB');
       return;
     }
-    
+
     setIsSaving(true);
     setError(null);
     try {
@@ -100,15 +107,18 @@ const Profile: React.FC = () => {
   const joinDate = new Date(user.joinDate);
   const daysJoined = Math.floor((new Date().getTime() - joinDate.getTime()) / (1000 * 3600 * 24));
 
+  // Initials for avatar fallback
+  const initials = user.name ? user.name.slice(0, 2).toUpperCase() : 'U';
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20 transition-colors">
       {/* Header Background */}
       <div className="h-60 bg-gradient-to-r from-wic-primary to-wic-secondary relative overflow-hidden">
         <div className="absolute inset-0 bg-black/20" />
-        <img 
-            src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2800&auto=format&fit=crop" 
-            alt="Campus" 
-            className="w-full h-full object-cover opacity-40 mix-blend-overlay" 
+        <img
+          src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2800&auto=format&fit=crop"
+          alt="Campus"
+          className="w-full h-full object-cover opacity-40 mix-blend-overlay"
         />
       </div>
 
@@ -116,215 +126,220 @@ const Profile: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-6">
           {/* Left Column: Avatar & Quick Actions */}
           <div className="md:w-1/3 flex flex-col gap-6">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 text-center border border-gray-100 dark:border-gray-800"
             >
-              {/* 错误提示 */}
-              {error && (
-                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
-              
-              <div className="relative inline-block mb-4">
-                <div 
-                  className={`w-32 h-32 rounded-full ring-4 ring-white dark:ring-gray-800 overflow-hidden shadow-lg mx-auto bg-gray-200 ${isEditing ? 'cursor-pointer hover:opacity-80' : ''}`}
-                  onClick={handleAvatarClick}
-                >
-                  <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                  {isSaving && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <Card className="text-center overflow-hidden border-gray-100 dark:border-gray-800 shadow-xl">
+                <CardContent className="pt-8 pb-8">
+                  {/* 错误提示 */}
+                  {error && (
+                    <div className="mb-4 p-3 bg-destructive/10 text-destructive rounded-lg text-sm font-medium">
+                      {error}
                     </div>
                   )}
-                </div>
-                {/* 隐藏的文件输入 */}
-                <input 
-                  type="file" 
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                />
-                {isEditing && (
-                  <button 
-                    onClick={handleAvatarClick}
-                    className="absolute bottom-0 right-0 p-2 bg-wic-primary text-white rounded-full shadow-lg hover:bg-wic-secondary transition-colors"
-                  >
-                    <Camera size={16} />
-                  </button>
-                )}
-              </div>
-              
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{user.name}</h1>
-              <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">{user.id}</p>
 
-              <div className="grid grid-cols-3 gap-2 border-t border-gray-100 dark:border-gray-800 pt-6">
-                 <div className="text-center">
-                    <div className="font-bold text-xl text-gray-900 dark:text-white">12</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">{t('profile.stats.reviews')}</div>
-                 </div>
-                 <div className="text-center border-l border-r border-gray-100 dark:border-gray-800">
-                    <div className="font-bold text-xl text-gray-900 dark:text-white">48</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">{t('profile.stats.likes')}</div>
-                 </div>
-                 <div className="text-center">
-                    <div className="font-bold text-xl text-gray-900 dark:text-white">{daysJoined}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">{t('profile.stats.days')}</div>
-                 </div>
-              </div>
+                  <div className="relative inline-block mb-4 group">
+                    <Avatar
+                      className={cn(
+                        "w-32 h-32 ring-4 ring-background shadow-lg mx-auto",
+                        isEditing && "cursor-pointer hover:opacity-80 transition-opacity"
+                      )}
+                      onClick={handleAvatarClick}
+                    >
+                      <AvatarImage src={user.avatar} className="object-cover" />
+                      <AvatarFallback className="text-4xl bg-muted text-muted-foreground">{initials}</AvatarFallback>
+                    </Avatar>
+
+                    {isSaving && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    )}
+
+                    {/* 隐藏的文件输入 */}
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                    />
+                    {isEditing && (
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        onClick={handleAvatarClick}
+                        className="absolute bottom-0 right-0 rounded-full shadow-lg"
+                      >
+                        <Camera size={16} />
+                      </Button>
+                    )}
+                  </div>
+
+                  <h1 className="text-2xl font-bold text-foreground mb-1">{user.name}</h1>
+                  <p className="text-muted-foreground text-sm mb-6">{user.id}</p>
+
+                  <div className="grid grid-cols-3 gap-2 border-t pt-6 bg-muted/20 -mx-6 -mb-8 pb-6">
+                    <div className="text-center">
+                      <div className="font-bold text-xl text-foreground">12</div>
+                      <div className="text-xs text-muted-foreground">{t('profile.stats.reviews')}</div>
+                    </div>
+                    <div className="text-center border-l border-r border-border">
+                      <div className="font-bold text-xl text-foreground">48</div>
+                      <div className="text-xs text-muted-foreground">{t('profile.stats.likes')}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-bold text-xl text-foreground">{daysJoined}</div>
+                      <div className="text-xs text-muted-foreground">{t('profile.stats.days')}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </motion.div>
 
-            <motion.div 
-               initial={{ opacity: 0, y: 20 }}
-               animate={{ opacity: 1, y: 0 }}
-               transition={{ delay: 0.1 }}
-               className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden"
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
             >
-               <button 
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-6 py-4 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors font-medium"
-               >
-                  <LogOut size={20} />
-                  {t('profile.logout')}
-               </button>
+              <Card className="border-gray-100 dark:border-gray-800 shadow-sm border-0">
+                <CardContent className="p-0">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-3 h-14 text-destructive hover:text-destructive hover:bg-destructive/10 text-base"
+                    onClick={handleLogout}
+                  >
+                    <LogOut size={20} />
+                    {t('profile.logout')}
+                  </Button>
+                </CardContent>
+              </Card>
             </motion.div>
           </div>
 
           {/* Right Column: Details Form */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="md:w-2/3 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 flex flex-col"
+            className="md:w-2/3"
           >
-            <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-               <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('profile.title')}</h2>
-               {!isEditing ? (
-                 <button 
-                    onClick={() => setIsEditing(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-sm font-bold text-gray-700 dark:text-gray-200 transition-colors"
-                 >
+            <Card className="shadow-xl border-gray-100 dark:border-gray-800 h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 border-b">
+                <CardTitle className="text-xl font-bold">{t('profile.title')}</CardTitle>
+                {!isEditing ? (
+                  <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="gap-2">
                     <Edit2 size={16} />
                     {t('profile.edit')}
-                 </button>
-               ) : (
-                 <div className="flex gap-2">
-                    <button 
-                        onClick={handleCancel}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-sm font-bold text-gray-700 dark:text-gray-200 transition-colors"
-                    >
-                        <X size={16} />
-                        {t('profile.cancel')}
-                    </button>
-                    <button 
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="flex items-center gap-2 px-4 py-2 bg-wic-primary hover:bg-wic-secondary rounded-lg text-sm font-bold text-white transition-colors disabled:opacity-50"
-                    >
-                        {isSaving ? (
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <Save size={16} />
-                        )}
-                        {t('profile.save')}
-                    </button>
-                 </div>
-               )}
-            </div>
-            
-            <div className="p-6 space-y-6">
+                  </Button>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button variant="ghost" size="sm" onClick={handleCancel} className="gap-2">
+                      <X size={16} />
+                      {t('profile.cancel')}
+                    </Button>
+                    <Button onClick={handleSave} disabled={isSaving} size="sm" className="gap-2">
+                      {isSaving ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <Save size={16} />
+                      )}
+                      {t('profile.save')}
+                    </Button>
+                  </div>
+                )}
+              </CardHeader>
+
+              <CardContent className="p-6 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Name */}
-                    <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('profile.label.name')}</label>
-                        <div className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${isEditing ? 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-wic-primary/20' : 'bg-gray-50 dark:bg-gray-800/50 border-transparent'}`}>
-                            <User size={20} className="text-gray-400" />
-                            <input 
-                                type="text" 
-                                disabled={!isEditing}
-                                value={formData.name}
-                                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                className="bg-transparent w-full focus:outline-none text-gray-900 dark:text-white font-medium"
-                            />
-                        </div>
+                  {/* Name */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('profile.label.name')}</Label>
+                    <div className={cn("flex items-center gap-3", !isEditing && "opacity-75")}>
+                      <User size={18} className="text-muted-foreground shrink-0" />
+                      <Input
+                        disabled={!isEditing}
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className={cn("bg-transparent", !isEditing && "border-transparent px-0 shadow-none h-auto py-0")}
+                      />
                     </div>
+                  </div>
 
-                    {/* Email */}
-                    <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('profile.label.email')}</label>
-                        <div className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${isEditing ? 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-wic-primary/20' : 'bg-gray-50 dark:bg-gray-800/50 border-transparent'}`}>
-                            <Mail size={20} className="text-gray-400" />
-                            <input 
-                                type="email" 
-                                disabled={!isEditing}
-                                value={formData.email}
-                                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                                className="bg-transparent w-full focus:outline-none text-gray-900 dark:text-white font-medium"
-                            />
-                        </div>
+                  {/* Email */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('profile.label.email')}</Label>
+                    <div className={cn("flex items-center gap-3", !isEditing && "opacity-75")}>
+                      <Mail size={18} className="text-muted-foreground shrink-0" />
+                      <Input
+                        type="email"
+                        disabled={!isEditing}
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className={cn("bg-transparent", !isEditing && "border-transparent px-0 shadow-none h-auto py-0")}
+                      />
                     </div>
+                  </div>
 
-                    {/* Department */}
-                    <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('profile.label.dept')}</label>
-                        <div className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${isEditing ? 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-wic-primary/20' : 'bg-gray-50 dark:bg-gray-800/50 border-transparent'}`}>
-                            <Building size={20} className="text-gray-400" />
-                            <input 
-                                type="text" 
-                                disabled={!isEditing}
-                                value={formData.department}
-                                onChange={(e) => setFormData({...formData, department: e.target.value})}
-                                className="bg-transparent w-full focus:outline-none text-gray-900 dark:text-white font-medium"
-                            />
-                        </div>
+                  {/* Department */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('profile.label.dept')}</Label>
+                    <div className={cn("flex items-center gap-3", !isEditing && "opacity-75")}>
+                      <Building size={18} className="text-muted-foreground shrink-0" />
+                      <Input
+                        disabled={!isEditing}
+                        value={formData.department}
+                        onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                        className={cn("bg-transparent", !isEditing && "border-transparent px-0 shadow-none h-auto py-0")}
+                      />
                     </div>
+                  </div>
 
-                    {/* Major */}
-                    <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('profile.label.major')}</label>
-                        <div className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${isEditing ? 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-wic-primary/20' : 'bg-gray-50 dark:bg-gray-800/50 border-transparent'}`}>
-                            <Book size={20} className="text-gray-400" />
-                            <input 
-                                type="text" 
-                                disabled={!isEditing}
-                                value={formData.major}
-                                onChange={(e) => setFormData({...formData, major: e.target.value})}
-                                className="bg-transparent w-full focus:outline-none text-gray-900 dark:text-white font-medium"
-                            />
-                        </div>
+                  {/* Major */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('profile.label.major')}</Label>
+                    <div className={cn("flex items-center gap-3", !isEditing && "opacity-75")}>
+                      <Book size={18} className="text-muted-foreground shrink-0" />
+                      <Input
+                        disabled={!isEditing}
+                        value={formData.major}
+                        onChange={(e) => setFormData({ ...formData, major: e.target.value })}
+                        className={cn("bg-transparent", !isEditing && "border-transparent px-0 shadow-none h-auto py-0")}
+                      />
                     </div>
+                  </div>
                 </div>
 
                 {/* Bio */}
-                <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('profile.label.bio')}</label>
-                    <div className={`p-3 rounded-xl border transition-colors ${isEditing ? 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-wic-primary/20' : 'bg-gray-50 dark:bg-gray-800/50 border-transparent'}`}>
-                        <textarea 
-                            disabled={!isEditing}
-                            value={formData.bio}
-                            onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                            rows={4}
-                            placeholder={t('profile.label.bio_placeholder')}
-                            className="bg-transparent w-full focus:outline-none text-gray-900 dark:text-white font-medium resize-none leading-relaxed"
-                        />
-                    </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('profile.label.bio')}</Label>
+                  <textarea
+                    disabled={!isEditing}
+                    value={formData.bio}
+                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                    rows={4}
+                    placeholder={t('profile.label.bio_placeholder')}
+                    className={cn(
+                      "flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+                      !isEditing && "border-transparent shadow-none bg-transparent resize-none p-0 focus-visible:ring-0"
+                    )}
+                  />
                 </div>
 
                 {/* Readonly: ID and Join Date */}
-                <div className="flex gap-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-                     <div className="flex items-center gap-2 text-sm text-gray-500">
-                         <div className="w-2 h-2 rounded-full bg-wic-primary"></div>
-                         ID: {user.id}
-                     </div>
-                     <div className="flex items-center gap-2 text-sm text-gray-500">
-                         <Calendar size={14} />
-                         Joined: {user.joinDate}
-                     </div>
+                <div className="flex gap-6 pt-4 border-t">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-2 h-2 rounded-full bg-primary/60"></div>
+                    <span className="font-mono">ID: {user.id}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Calendar size={14} />
+                    <span>Joined: {user.joinDate}</span>
+                  </div>
                 </div>
-            </div>
+              </CardContent>
+            </Card>
           </motion.div>
         </div>
       </div>

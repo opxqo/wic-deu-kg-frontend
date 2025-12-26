@@ -245,7 +245,6 @@ const Navbar: React.FC = () => {
         { name: t('nav.chat'), path: '/chat', icon: MessageCircle },
         { name: t('nav.food'), path: '/food', icon: Utensils },
         { name: t('nav.library'), path: '/library', icon: Library },
-        { name: '', path: 'https://mc.wic.edu.kg', iconUrl: 'https://www.minecraft.net/content/dam/minecraftnet/games/minecraft/logos/Global-Header_MCCB-Logo_300x51.svg', isExternal: true },
     ];
 
     // Logic: Transparent on Home top, White/Dark on scroll or other pages

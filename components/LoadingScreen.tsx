@@ -58,7 +58,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onFinished }) => {
   const bgColor = isDark ? '#0f172a' : '#fdfdfd';
   const primaryColor = isDark ? '#6ee7b7' : '#394E28';
   const secondaryColor = isDark ? '#0f172a' : '#FFFFFF';
-  const textColor = isDark ? '#e2e8f0' : '#394E28';
+  const textColor = isDark ? '#e2e8f0' : '#000000';
 
   useEffect(() => {
     const exitTimer = setTimeout(() => {
