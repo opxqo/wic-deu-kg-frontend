@@ -17,6 +17,17 @@ const HeroSection: React.FC = () => {
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
+  // Scrollbar toggle state
+  const [showScrollbar, setShowScrollbar] = React.useState(false);
+
+  React.useEffect(() => {
+    if (showScrollbar) {
+      document.documentElement.classList.add('show-scrollbar');
+    } else {
+      document.documentElement.classList.remove('show-scrollbar');
+    }
+  }, [showScrollbar]);
+
   return (
     <section ref={targetRef} className="relative min-h-[100dvh] w-full flex flex-col overflow-hidden -mt-16">
       {/* Background Image Layer */}
@@ -179,18 +190,22 @@ const HeroSection: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* Scroll Indicator (Desktop Only) */}
+      {/* Scroll Indicator (Desktop Only) - Now a Toggle Button */}
       <motion.div
         style={{ opacity }}
-        className="hidden md:block absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20"
+        className="hidden md:block absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 cursor-pointer"
+        onClick={() => setShowScrollbar(!showScrollbar)}
+        title={showScrollbar ? "Hide Scrollbar" : "Show Scrollbar"}
       >
-        <div className="flex flex-col items-center gap-2 animate-float-slow">
+        <div className="flex flex-col items-center gap-2 animate-float-slow transition-transform hover:scale-110 active:scale-95">
           {/* Mouse Outer Body */}
-          <div className="w-[24px] h-[40px] rounded-[14px] border-[2px] border-white/90 relative shadow-[inset_0_0_6px_rgba(0,0,0,0.2),0_2px_10px_rgba(0,0,0,0.3)] backdrop-blur-sm">
-            {/* Scroll Wheel */}
-            <div className="absolute left-1/2 -translate-x-1/2 top-[6px] w-[6px] h-[10px] bg-white rounded-[4px] shadow-[0_1px_3px_rgba(0,0,0,0.3)]"></div>
+          <div className={`w-[24px] h-[40px] rounded-[14px] border-[2px] relative shadow-[inset_0_0_6px_rgba(0,0,0,0.2),0_2px_10px_rgba(0,0,0,0.3)] backdrop-blur-sm transition-colors duration-300 ${showScrollbar ? 'border-wic-primary bg-white/20' : 'border-white/90'}`}>
+            {/* Scroll Wheel - Changes color to indicate active state */}
+            <div className={`absolute left-1/2 -translate-x-1/2 top-[6px] w-[6px] h-[10px] rounded-[4px] shadow-[0_1px_3px_rgba(0,0,0,0.3)] transition-colors duration-300 ${showScrollbar ? 'bg-wic-primary' : 'bg-white'}`}></div>
           </div>
-          <span className="text-white text-[12px] tracking-[3px] uppercase font-semibold opacity-90 text-shadow-sm font-sans">Scroll</span>
+          <span className="text-white text-[12px] tracking-[3px] uppercase font-semibold opacity-90 text-shadow-sm font-sans">
+            {showScrollbar ? 'ON' : 'OFF'}
+          </span>
         </div>
       </motion.div>
       <style>{`

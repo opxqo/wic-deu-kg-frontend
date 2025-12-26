@@ -14,6 +14,46 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+// Mock Data for Cascading Select
+const DEPARTMENT_DATA = [
+  {
+    name: "信息工程学部",
+    majors: ["计算机科学与技术", "软件工程", "物联网工程", "电子信息工程", "通信工程", "数据科学与大数据技术"],
+  },
+  {
+    name: "经济与管理学部",
+    majors: ["会计学", "财务管理", "国际经济与贸易", "工商管理", "市场营销", "物流管理"],
+  },
+  {
+    name: "医学部",
+    majors: ["护理学", "康复治疗学", "医学检验技术", "药学"],
+  },
+  {
+    name: "艺术设计学部",
+    majors: ["环境设计", "视觉传达设计", "产品设计", "数字媒体艺术", "动画"],
+  },
+  {
+    name: "外语学部",
+    majors: ["英语", "日语", "商务英语", "翻译"],
+  },
+  {
+    name: "建筑工程学部",
+    majors: ["土木工程", "工程造价", "建筑学", "城乡规划"],
+  },
+  {
+    name: "机电工程学部",
+    majors: ["机械设计制造及其自动化", "车辆工程", "电气工程及其自动化", "机器人工程"],
+  },
+];
+
 const Profile: React.FC = () => {
   const { user, isAuthenticated, logout, updateProfile, uploadAvatar } = useUser();
   const { t } = useLanguage();
@@ -287,12 +327,29 @@ const Profile: React.FC = () => {
                     <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('profile.label.dept')}</Label>
                     <div className={cn("flex items-center gap-3", !isEditing && "opacity-75")}>
                       <Building size={18} className="text-muted-foreground shrink-0" />
-                      <Input
-                        disabled={!isEditing}
-                        value={formData.department}
-                        onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                        className={cn("bg-transparent", !isEditing && "border-transparent px-0 shadow-none h-auto py-0")}
-                      />
+                      {isEditing ? (
+                        <Select
+                          value={formData.department}
+                          onValueChange={(value) => setFormData({ ...formData, department: value, major: '' })}
+                        >
+                          <SelectTrigger className="bg-transparent border-input h-auto py-1 shadow-sm">
+                            <SelectValue placeholder="选择所属学部" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DEPARTMENT_DATA.map((dept) => (
+                              <SelectItem key={dept.name} value={dept.name}>
+                                {dept.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          disabled
+                          value={formData.department}
+                          className="bg-transparent border-transparent px-0 shadow-none h-auto py-0"
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -301,12 +358,32 @@ const Profile: React.FC = () => {
                     <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('profile.label.major')}</Label>
                     <div className={cn("flex items-center gap-3", !isEditing && "opacity-75")}>
                       <Book size={18} className="text-muted-foreground shrink-0" />
-                      <Input
-                        disabled={!isEditing}
-                        value={formData.major}
-                        onChange={(e) => setFormData({ ...formData, major: e.target.value })}
-                        className={cn("bg-transparent", !isEditing && "border-transparent px-0 shadow-none h-auto py-0")}
-                      />
+                      {isEditing ? (
+                        <Select
+                          value={formData.major}
+                          onValueChange={(value) => setFormData({ ...formData, major: value })}
+                          disabled={!formData.department}
+                        >
+                          <SelectTrigger className="bg-transparent border-input h-auto py-1 shadow-sm">
+                            <SelectValue placeholder="选择专业" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DEPARTMENT_DATA.find(d => d.name === formData.department)?.majors.map((major) => (
+                              <SelectItem key={major} value={major}>
+                                {major}
+                              </SelectItem>
+                            )) || (
+                                <SelectItem value="placeholder" disabled>请先选择学部</SelectItem>
+                              )}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          disabled
+                          value={formData.major}
+                          className="bg-transparent border-transparent px-0 shadow-none h-auto py-0"
+                        />
+                      )}
                     </div>
                   </div>
                 </div>

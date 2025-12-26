@@ -30,6 +30,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -62,6 +63,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -70,45 +72,75 @@
 /* Original Styles from index.html */
 /* 毛泽东书法字体 - 分包（仅含"武汉城市学院"） */
 @font-face {
-font-family: '草檀斋毛泽东字体';
-src: url('https://r2.wic.edu.kg/fonts/maozedong-1.woff2') format('woff2');
-font-weight: normal;
-font-style: normal;
-font-display: swap;
-}
-/* 毛泽东书法字体 - 完整包 */
-@font-face {
-font-family: 'MaoZedong';
-src: url('https://r2.wic.edu.kg/fonts/maozedong.woff2') format('woff2');
-font-weight: normal;
-font-style: normal;
-font-display: swap;
-}
-body {
-font-family: 'Inter', sans-serif;
-/* background-color: #F8FAFC; -> Handled by Tailwind layer base now, or explicit class in Layout */
+  font-family: '草檀斋毛泽东字体';
+  src: url('https://r2.wic.edu.kg/fonts/maozedong-1.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
-/* Custom scrollbar for chat and lists */
+/* 毛泽东书法字体 - 完整包 */
+@font-face {
+  font-family: 'MaoZedong';
+  src: url('https://r2.wic.edu.kg/fonts/maozedong.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  /* background-color: #F8FAFC; -> Handled by Tailwind layer base now, or explicit class in Layout */
+}
+
+/* Hidden scrollbar - Global Default */
 ::-webkit-scrollbar {
-width: 6px;
-height: 6px;
+  width: 0px;
+  height: 0px;
+  background: transparent;
 }
-::-webkit-scrollbar-track {
-background: transparent;
-}
+
 ::-webkit-scrollbar-thumb {
-background: #CBD5E1;
-border-radius: 3px;
+  background: transparent;
 }
-.dark ::-webkit-scrollbar-thumb {
-background: #475569;
+
+::-webkit-scrollbar-track {
+  background: transparent;
 }
-::-webkit-scrollbar-thumb:hover {
-background: #94A3B8;
+
+html {
+  scrollbar-width: none;
 }
+
+/* Visible scrollbar state - toggled via class */
+html.show-scrollbar ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+html.show-scrollbar ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html.show-scrollbar ::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+
+.dark html.show-scrollbar ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+html.show-scrollbar ::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+html.show-scrollbar {
+  scrollbar-width: auto;
+}
+
 /* Leaflet custom marker */
 .custom-div-icon {
-background: transparent;
-border: none;
+  background: transparent;
+  border: none;
 }
