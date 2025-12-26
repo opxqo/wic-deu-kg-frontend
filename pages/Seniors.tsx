@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Check, MessageSquareQuote, BookOpen, Coffee, GraduationCap, Pencil, Leaf, Sparkles, Heart, Trash2, User, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -89,8 +89,8 @@ const Seniors: React.FC = () => {
     fetchData();
   }, []);
 
-  // Go to specific page
-  const goToPage = async (page: number) => {
+  // Go to specific page - memoized
+  const goToPage = useCallback(async (page: number) => {
     if (page < 1 || page > totalPages || page === currentPage) return;
     try {
       setLoading(true);
@@ -105,7 +105,7 @@ const Seniors: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [totalPages, currentPage]);
 
   const handleCreateMessage = async () => {
     if (!content.trim() || !isLoggedIn) return;
@@ -133,7 +133,8 @@ const Seniors: React.FC = () => {
     }
   };
 
-  const handleToggleLike = async (messageId: number) => {
+  // Toggle like - memoized
+  const handleToggleLike = useCallback(async (messageId: number) => {
     if (!isLoggedIn) {
       alert('请先登录后再点赞');
       return;
@@ -150,9 +151,10 @@ const Seniors: React.FC = () => {
     } catch (err) {
       console.error('Failed to toggle like:', err);
     }
-  };
+  }, [isLoggedIn]);
 
-  const handleDeleteMessage = async () => {
+  // Delete message - memoized
+  const handleDeleteMessage = useCallback(async () => {
     if (!deleteMessageId) return;
 
     try {
@@ -166,10 +168,10 @@ const Seniors: React.FC = () => {
     } finally {
       setDeleteMessageId(null);
     }
-  };
+  }, [deleteMessageId]);
 
-  // Fetch my messages when switching to "my messages" view
-  const fetchMyMessages = async () => {
+  // Fetch my messages when switching to "my messages" view - memoized
+  const fetchMyMessages = useCallback(async () => {
     if (myMessagesLoaded) return;
     try {
       setLoading(true);
@@ -181,21 +183,26 @@ const Seniors: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [myMessagesLoaded]);
 
-  const handleShowMyMessages = async (show: boolean) => {
+  // Handle show my messages toggle - memoized
+  const handleShowMyMessages = useCallback(async (show: boolean) => {
     setShowMyMessages(show);
     if (show && isLoggedIn && !myMessagesLoaded) {
       await fetchMyMessages();
     }
-  };
+  }, [isLoggedIn, myMessagesLoaded, fetchMyMessages]);
 
-  // Display either all messages or my messages
-  const displayedMessages = showMyMessages ? myMessages : messages;
+  // Display either all messages or my messages - memoized
+  const displayedMessages = useMemo(() =>
+    showMyMessages ? myMessages : messages,
+    [showMyMessages, myMessages, messages]
+  );
 
-  const formatDate = (dateStr: string) => {
+  // Format date - memoized
+  const formatDate = useCallback((dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('zh-CN');
-  };
+  }, []);
 
   if (loading) {
     return (
