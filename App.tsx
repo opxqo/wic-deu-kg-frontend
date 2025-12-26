@@ -31,6 +31,7 @@ const ScrollToTop = () => {
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const isChatPage = location.pathname === '/chat';
+  const isSeniorsPage = location.pathname === '/seniors';
   const { theme } = useTheme();
 
   return (
@@ -40,7 +41,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <main className={`flex-grow ${isChatPage ? '' : 'pt-16'} ${isChatPage ? 'h-screen overflow-hidden' : ''} relative z-10`}>
         {children}
       </main>
-      {!isChatPage && <Footer />}
+      {(!isChatPage && !isSeniorsPage) && <Footer />}
     </div>
   );
 };

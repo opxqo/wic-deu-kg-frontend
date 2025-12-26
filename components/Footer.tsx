@@ -223,7 +223,7 @@ const Footer: React.FC = () => {
             <div className="flex items-center justify-center lg:justify-start gap-3 pt-2">
               <SocialLink href="#" icon={<MessageCircle size={16} />} label="WeChat" />
               <SocialLink href="#" icon={<Globe size={16} />} label="Weibo" />
-              <SocialLink href="https://github.com/wic-dev" icon={<Github size={16} />} label="GitHub" />
+              <SocialLink href="https://github.com/opxqo" icon={<Github size={16} />} label="GitHub" />
             </div>
           </div>
 

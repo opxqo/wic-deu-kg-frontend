@@ -1,10 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Ma+Shan+Zheng&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 140 30% 97%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
@@ -143,4 +144,74 @@ html.show-scrollbar {
 .custom-div-icon {
   background: transparent;
   border: none;
+}
+
+/* Uiverse Paper Style (Adapted from Yaya12085) */
+.uiverse-paper {
+  position: relative;
+  box-sizing: border-box;
+  border-radius: 2px !important;
+}
+
+/* Lined paper pattern adaptation */
+.uiverse-paper.lined-paper {
+  background-image: repeating-linear-gradient(transparent 0rem, transparent 1.8rem, rgba(0, 0, 0, 0.08) 1.8rem, rgba(0, 0, 0, 0.08) 1.85rem);
+  background-size: 100% 100%;
+}
+
+.dark .uiverse-paper.lined-paper {
+  background-image: repeating-linear-gradient(transparent 0rem, transparent 1.8rem, rgba(255, 255, 255, 0.08) 1.8rem, rgba(255, 255, 255, 0.08) 1.85rem);
+}
+
+/* The curled corners shadow effect */
+.uiverse-paper::before,
+.uiverse-paper::after {
+  position: absolute;
+  content: "";
+  bottom: 12px;
+  width: 40%;
+  height: 10px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+  z-index: -1;
+  transition: all 0.3s ease;
+}
+
+/* Dark mode shadow adjustment */
+.dark .uiverse-paper::before,
+.dark .uiverse-paper::after {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.9);
+  bottom: 12px;
+}
+
+.uiverse-paper::before {
+  left: 10px;
+  transform: skew(-5deg) rotate(-5deg);
+}
+
+.uiverse-paper::after {
+  right: 10px;
+  transform: skew(5deg) rotate(5deg);
+}
+
+.uiverse-paper:hover::before,
+.uiverse-paper:hover::after {
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+  bottom: 8px;
+}
+
+/* Chinese Handwriting Fonts */
+.font-mashan {
+  font-family: 'Ma Shan Zheng', cursive;
+}
+
+.font-longcang {
+  font-family: 'Long Cang', cursive;
+}
+
+.font-kuaile {
+  font-family: 'ZCOOL KuaiLe', sans-serif;
+}
+
+.font-liujian {
+  font-family: 'Liu Jian Mao Cao', cursive;
 }
