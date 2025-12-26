@@ -46,6 +46,7 @@ const Seniors: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalMessages, setTotalMessages] = useState(0);
+  const [pageLoading, setPageLoading] = useState(false);
   const PAGE_SIZE = 12;
 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -90,21 +91,22 @@ const Seniors: React.FC = () => {
     fetchData();
   }, []);
 
-  // Go to specific page - memoized
+  // Go to specific page - memoized (without full page refresh)
   const goToPage = useCallback(async (page: number) => {
     if (page < 1 || page > totalPages || page === currentPage) return;
     try {
-      setLoading(true);
+      setPageLoading(true);
       const res = await messageApi.getMessages(page, PAGE_SIZE);
       setMessages(res.data.records);
       setCurrentPage(page);
       setTotalPages(res.data.pages);
-      // Scroll to top of messages
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Smooth scroll to top of content area
+      const contentArea = document.querySelector('main');
+      if (contentArea) contentArea.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       console.error('Failed to load page:', err);
     } finally {
-      setLoading(false);
+      setPageLoading(false);
     }
   }, [totalPages, currentPage]);
 
@@ -472,146 +474,154 @@ const Seniors: React.FC = () => {
                 {isLoggedIn && <p className="text-sm mt-1">点击右下角的 + 按钮开始写留言吧！</p>}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                <AnimatePresence mode="popLayout">
-                  {displayedMessages.map((msg, idx) => {
-                    const scatter = SCATTER_POSITIONS[idx % SCATTER_POSITIONS.length];
-                    const shadow = COLOR_SHADOWS[msg.cardColor] || COLOR_SHADOWS['#FFF8DC'];
-                    const fontClass = msg.font?.cssClass || 'font-mashan';
+              <div className="relative">
+                {/* Page loading overlay */}
+                {pageLoading && (
+                  <div className="absolute inset-0 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
+                    <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+                  </div>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                  <AnimatePresence mode="popLayout">
+                    {displayedMessages.map((msg, idx) => {
+                      const scatter = SCATTER_POSITIONS[idx % SCATTER_POSITIONS.length];
+                      const shadow = COLOR_SHADOWS[msg.cardColor] || COLOR_SHADOWS['#FFF8DC'];
+                      const fontClass = msg.font?.cssClass || 'font-mashan';
 
-                    return (
-                      <motion.div
-                        key={msg.id}
-                        layout
-                        initial={{ opacity: 0, scale: 0.8, y: 40 }}
-                        animate={{
-                          opacity: 1,
-                          scale: 1,
-                          y: scatter.translateY,
-                          rotate: scatter.rotate
-                        }}
-                        exit={{ opacity: 0, scale: 0.5 }}
-                        whileHover={{ scale: 1.03, rotate: 0, y: -4, transition: { duration: 0.2 } }}
-                        transition={{ duration: 0.4, delay: idx * 0.05 }}
-                        className="group relative p-5 rounded-lg cursor-default"
-                        style={{ backgroundColor: msg.cardColor, boxShadow: shadow }}
-                      >
-                        {/* Matte texture overlay */}
-                        <div className="absolute inset-0 rounded-lg opacity-30 pointer-events-none"
-                          style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.4) 0%, transparent 50%, rgba(0,0,0,0.03) 100%)' }}
-                        />
+                      return (
+                        <motion.div
+                          key={msg.id}
+                          layout
+                          initial={{ opacity: 0, scale: 0.8, y: 40 }}
+                          animate={{
+                            opacity: 1,
+                            scale: 1,
+                            y: scatter.translateY,
+                            rotate: scatter.rotate
+                          }}
+                          exit={{ opacity: 0, scale: 0.5 }}
+                          whileHover={{ scale: 1.03, rotate: 0, y: -4, transition: { duration: 0.2 } }}
+                          transition={{ duration: 0.4, delay: idx * 0.05 }}
+                          className="group relative p-5 rounded-lg cursor-default"
+                          style={{ backgroundColor: msg.cardColor, boxShadow: shadow }}
+                        >
+                          {/* Matte texture overlay */}
+                          <div className="absolute inset-0 rounded-lg opacity-30 pointer-events-none"
+                            style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.4) 0%, transparent 50%, rgba(0,0,0,0.03) 100%)' }}
+                          />
 
-                        {/* Delete button - only show in My Messages view */}
-                        {isLoggedIn && showMyMessages && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setDeleteMessageId(msg.id); }}
-                            className="absolute top-2 right-2 p-1.5 rounded-full bg-rose-100 text-rose-500 opacity-0 group-hover:opacity-100 hover:bg-rose-200 transition-all z-10"
-                            title="删除留言"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          {/* Delete button - only show in My Messages view */}
+                          {isLoggedIn && showMyMessages && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setDeleteMessageId(msg.id); }}
+                              className="absolute top-2 right-2 p-1.5 rounded-full bg-rose-100 text-rose-500 opacity-0 group-hover:opacity-100 hover:bg-rose-200 transition-all z-10"
+                              title="删除留言"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+
+                          <div className={`relative ${fontClass} text-xl leading-relaxed`} style={{ color: msg.inkColor }}>
+                            <p className="whitespace-pre-wrap min-h-[80px]">{msg.content}</p>
+                            <div className="mt-4 pt-3 border-t border-black/10 flex justify-between items-center text-sm font-sans">
+                              <div className="opacity-60">
+                                <span className="font-medium">{msg.signature || '匿名'}</span>
+                                <span className="mx-2">·</span>
+                                <span>{formatDate(msg.createdAt)}</span>
+                              </div>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleToggleLike(msg.id); }}
+                                className={`flex items-center gap-1 px-2 py-1 rounded-full transition-all ${msg.liked
+                                  ? 'text-rose-500 bg-rose-50 dark:bg-rose-900/20'
+                                  : 'text-zinc-400 hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20'
+                                  }`}
+                              >
+                                <Heart size={16} className={msg.liked ? 'fill-current' : ''} />
+                                <span className="text-xs font-medium">{msg.likeCount}</span>
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
+                </div>
+
+                {/* Pagination - only show for all messages view when there are multiple pages */}
+                {!showMyMessages && totalPages > 1 && messages.length > 0 && (
+                  <div className="flex justify-center mt-8 mb-4">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() => goToPage(currentPage - 1)}
+                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                          />
+                        </PaginationItem>
+
+                        {/* First page */}
+                        {currentPage > 2 && (
+                          <PaginationItem>
+                            <PaginationLink onClick={() => goToPage(1)}>1</PaginationLink>
+                          </PaginationItem>
                         )}
 
-                        <div className={`relative ${fontClass} text-xl leading-relaxed`} style={{ color: msg.inkColor }}>
-                          <p className="whitespace-pre-wrap min-h-[80px]">{msg.content}</p>
-                          <div className="mt-4 pt-3 border-t border-black/10 flex justify-between items-center text-sm font-sans">
-                            <div className="opacity-60">
-                              <span className="font-medium">{msg.signature || '匿名'}</span>
-                              <span className="mx-2">·</span>
-                              <span>{formatDate(msg.createdAt)}</span>
-                            </div>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleToggleLike(msg.id); }}
-                              className={`flex items-center gap-1 px-2 py-1 rounded-full transition-all ${msg.liked
-                                ? 'text-rose-500 bg-rose-50 dark:bg-rose-900/20'
-                                : 'text-zinc-400 hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20'
-                                }`}
-                            >
-                              <Heart size={16} className={msg.liked ? 'fill-current' : ''} />
-                              <span className="text-xs font-medium">{msg.likeCount}</span>
-                            </button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </AnimatePresence>
-              </div>
-            )}
+                        {/* Ellipsis before current */}
+                        {currentPage > 3 && (
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        )}
 
-            {/* Pagination - only show for all messages view when there are multiple pages */}
-            {!showMyMessages && totalPages > 1 && messages.length > 0 && (
-              <div className="flex justify-center mt-8 mb-4">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        onClick={() => goToPage(currentPage - 1)}
-                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                      />
-                    </PaginationItem>
+                        {/* Previous page */}
+                        {currentPage > 1 && (
+                          <PaginationItem>
+                            <PaginationLink onClick={() => goToPage(currentPage - 1)}>
+                              {currentPage - 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        )}
 
-                    {/* First page */}
-                    {currentPage > 2 && (
-                      <PaginationItem>
-                        <PaginationLink onClick={() => goToPage(1)}>1</PaginationLink>
-                      </PaginationItem>
-                    )}
+                        {/* Current page */}
+                        <PaginationItem>
+                          <PaginationLink isActive>{currentPage}</PaginationLink>
+                        </PaginationItem>
 
-                    {/* Ellipsis before current */}
-                    {currentPage > 3 && (
-                      <PaginationItem>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    )}
+                        {/* Next page */}
+                        {currentPage < totalPages && (
+                          <PaginationItem>
+                            <PaginationLink onClick={() => goToPage(currentPage + 1)}>
+                              {currentPage + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        )}
 
-                    {/* Previous page */}
-                    {currentPage > 1 && (
-                      <PaginationItem>
-                        <PaginationLink onClick={() => goToPage(currentPage - 1)}>
-                          {currentPage - 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    )}
+                        {/* Ellipsis after current */}
+                        {currentPage < totalPages - 2 && (
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        )}
 
-                    {/* Current page */}
-                    <PaginationItem>
-                      <PaginationLink isActive>{currentPage}</PaginationLink>
-                    </PaginationItem>
+                        {/* Last page */}
+                        {currentPage < totalPages - 1 && (
+                          <PaginationItem>
+                            <PaginationLink onClick={() => goToPage(totalPages)}>
+                              {totalPages}
+                            </PaginationLink>
+                          </PaginationItem>
+                        )}
 
-                    {/* Next page */}
-                    {currentPage < totalPages && (
-                      <PaginationItem>
-                        <PaginationLink onClick={() => goToPage(currentPage + 1)}>
-                          {currentPage + 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    )}
-
-                    {/* Ellipsis after current */}
-                    {currentPage < totalPages - 2 && (
-                      <PaginationItem>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    )}
-
-                    {/* Last page */}
-                    {currentPage < totalPages - 1 && (
-                      <PaginationItem>
-                        <PaginationLink onClick={() => goToPage(totalPages)}>
-                          {totalPages}
-                        </PaginationLink>
-                      </PaginationItem>
-                    )}
-
-                    <PaginationItem>
-                      <PaginationNext
-                        onClick={() => goToPage(currentPage + 1)}
-                        className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() => goToPage(currentPage + 1)}
+                            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
               </div>
             )}
           </div>
