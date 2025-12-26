@@ -16,18 +16,34 @@ export const INK_COLORS: Record<InkColor, string> = {
 };
 
 export const FONTS: Record<FontFamily, string> = {
-    caveat: 'font-mashan',      // 马上正
-    dancing: 'font-longcang',   // 龙藏
-    indie: 'font-kuaile',       // 站酷快乐体
-    shadows: 'font-liujian',    // 刘建毛草
+    caveat: 'font-mashan',      // ID: 1 马上正
+    dancing: 'font-longcang',   // ID: 2 龙藏
+    indie: 'font-kuaile',       // ID: 3 站酷快乐体
+    shadows: 'font-liujian',    // ID: 4 刘建毛草
 };
 
-// Chinese font display names for UI
+// Chinese font display names for UI (match database name field)
 export const FONT_NAMES: Record<FontFamily, string> = {
-    caveat: '马上正',
-    dancing: '龙藏体',
-    indie: '快乐体',
-    shadows: '毛草体',
+    caveat: '马上正',      // ID: 1
+    dancing: '龙藏体',     // ID: 2
+    indie: '快乐体',       // ID: 3
+    shadows: '毛草体',     // ID: 4
+};
+
+// Font ID mapping for database storage
+export const FONT_IDS: Record<FontFamily, number> = {
+    caveat: 1,
+    dancing: 2,
+    indie: 3,
+    shadows: 4,
+};
+
+// Reverse mapping: database ID to FontFamily key
+export const ID_TO_FONT: Record<number, FontFamily> = {
+    1: 'caveat',
+    2: 'dancing',
+    3: 'indie',
+    4: 'shadows',
 };
 
 // CSS patterns for textures
