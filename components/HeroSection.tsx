@@ -120,7 +120,7 @@ const HeroSection: React.FC = () => {
 
             {/* 3D Map Button - Premium Modern Style with Meteor Effect */}
             <a
-              href="http://localhost:3001/campus"
+              href="https://mapbox.zeabur.168888868.xyz/campus"
               target="_blank"
               rel="noopener noreferrer"
               className="group relative px-5 py-2 overflow-hidden rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:border-white/20 hover:shadow-blue-500/20 active:scale-95"

@@ -13,6 +13,7 @@ import Seniors from './pages/Seniors';
 import Gallery from './pages/Gallery';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
+import UserProfile from './pages/UserProfile';
 import { AnimatePresence } from 'framer-motion';
 import { LanguageProvider } from './LanguageContext';
 import { ThemeProvider, useTheme } from './ThemeContext';
@@ -76,6 +77,7 @@ const AppContent: React.FC = () => {
                   <Route path="/gallery" element={<Gallery />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/user/:id" element={<UserProfile />} />
                 </Routes>
               </AnimatePresence>
             </Layout>
