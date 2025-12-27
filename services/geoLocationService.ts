@@ -3,7 +3,7 @@
  * 负责获取用户位置、校验地理围栏、在请求中附加位置信息
  */
 
-import { API_BASE_URL as ConfigApiBase } from '../config/apiConfig';
+import { API_BASE_URL as ConfigApiBase } from '../src/config/apiConfig';
 
 // @ts-ignore
 const API_BASE_URL = ConfigApiBase;

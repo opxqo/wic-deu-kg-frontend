@@ -1,4 +1,4 @@
-import { API_BASE_URL as ConfigApiBase } from '../config/apiConfig';
+import { API_BASE_URL as ConfigApiBase } from '../src/config/apiConfig';
 
 // @ts-ignore
 const API_BASE_URL = ConfigApiBase + '/api';

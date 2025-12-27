@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../config/apiConfig';
+import { API_BASE_URL } from '../src/config/apiConfig';
 // API service for Senior Messages
 const API_BASE = API_BASE_URL;
 

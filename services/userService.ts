@@ -1,5 +1,5 @@
 import { ApiResult } from './authService';
-import { API_BASE_URL as ConfigApiBase } from '../config/apiConfig';
+import { API_BASE_URL as ConfigApiBase } from '../src/config/apiConfig';
 
 // 使用相对路径以触发 Vite Proxy转发到 http://localhost:8080
 // @ts-ignore

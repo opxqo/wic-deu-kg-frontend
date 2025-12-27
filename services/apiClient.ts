@@ -4,7 +4,7 @@
  */
 
 import { geoLocationService } from './geoLocationService';
-import { API_BASE_URL as ConfigApiBase } from '../config/apiConfig';
+import { API_BASE_URL as ConfigApiBase } from '../src/config/apiConfig';
 
 // @ts-ignore - Vite 环境变量
 // @ts-ignore
