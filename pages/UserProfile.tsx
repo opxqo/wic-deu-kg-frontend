@@ -23,7 +23,7 @@ const UserProfile: React.FC = () => {
             try {
                 setLoading(true);
                 const response = await userService.getUserCard(id);
-                if (response.code === 200) {
+                if ((response.code === 0 || response.code === 200) && response.data) {
                     setUser(response.data);
                 } else {
                     setError(response.message || '获取用户信息失败');
@@ -188,7 +188,7 @@ const UserProfile: React.FC = () => {
                                         </div>
                                         <div>
                                             <p className="text-muted-foreground text-xs">加入时间</p>
-                                            <p className="font-medium text-foreground">{formatDate(user.joinedAt)}</p>
+                                            <p className="font-medium text-foreground">{formatDate(user.createdAt)}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3 text-sm">

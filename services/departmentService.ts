@@ -1,7 +1,4 @@
-import { API_BASE_URL as ConfigApiBase } from '../src/config/apiConfig';
-
-// @ts-ignore
-const API_BASE_URL = ConfigApiBase;
+import { apiClient, ApiResult } from './apiClient';
 
 // 辅导员信息
 export interface CounselorInfo {
@@ -28,56 +25,23 @@ export interface DepartmentVO {
   counselors: CounselorInfo[];
 }
 
-// API 响应包装
-export interface ApiResult<T> {
-  code: number;
-  message: string;
-  data: T;
-}
-
 const departmentService = {
   /**
    * 获取所有启用的学部列表
-   * @returns 学部列表
+   * V3: GET /api/departments
    */
   async getAllDepartments(): Promise<ApiResult<DepartmentVO[]>> {
-    const response = await fetch(`${API_BASE_URL}/api/departments`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const result = await response.json();
-
-    if (!response.ok || result.code !== 0) {
-      throw new Error(result.message || '获取学部列表失败');
-    }
-
-    return result;
+    // 公共接口 /api/departments
+    return apiClient.get<DepartmentVO[]>('/api/departments');
   },
 
   /**
    * 获取单个学部详情
-   * @param id 学部ID
-   * @returns 学部详情
+   * V3: GET /api/departments/{id}
    */
   async getDepartmentById(id: number): Promise<ApiResult<DepartmentVO>> {
-    const response = await fetch(`${API_BASE_URL}/api/departments/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const result = await response.json();
-
-    if (!response.ok || result.code !== 0) {
-      throw new Error(result.message || '获取学部详情失败');
-    }
-
-    return result;
-  },
+    return apiClient.get<DepartmentVO>(`/api/departments/${id}`);
+  }
 };
 
 export default departmentService;

@@ -230,13 +230,29 @@ class GeoLocationService {
     const response = await fetch(`${API_BASE_URL}/api/geo/config`);
     const result = await response.json();
 
-    if (result.code === 0) {
-      this.geoConfig = result.data;
-      this.saveToStorage();
-      return result.data;
+    // 智能兼容处理
+    if ((result.code === 0 || result.code === 200)) {
+      if (result.data) {
+        this.geoConfig = result.data;
+        this.saveToStorage();
+        return result.data;
+      }
+      // 防御代码
+      if (result.enabled !== undefined) {
+        // raw data
+      } else {
+        return result; // assume data inside
+      }
     }
 
-    throw new Error(result.message || '获取配置失败');
+    if (!response.ok) {
+      throw new Error(result.message || '获取配置失败');
+    }
+
+    // Manual wrap
+    this.geoConfig = result as GeoConfig;
+    this.saveToStorage();
+    return result as GeoConfig;
   }
 
   /**
@@ -260,14 +276,30 @@ class GeoLocationService {
 
     const result = await response.json();
 
-    if (result.code === 0) {
-      this.checkResult = result.data;
-      this.saveToStorage();
-      this.notifyCheckResultChange(result.data);
-      return result.data;
+    // 智能兼容处理
+    if ((result.code === 0 || result.code === 200)) {
+      if (result.data) {
+        this.checkResult = result.data;
+        this.saveToStorage();
+        this.notifyCheckResultChange(result.data);
+        return result.data;
+      }
+      // raw data might have code? unlikely for GeoCheckResult
+      // return result;
     }
 
-    throw new Error(result.message || '位置校验失败');
+    if (!response.ok && result.code !== undefined && result.code !== 0 && result.code !== 200) {
+      throw new Error(result.message || '位置校验失败');
+    }
+
+    // 如果没有code，或者code成功但没data（假设raw），或者response.ok
+    // 视为raw data
+    const rawData = (result.code === 0 || result.code === 200) && result.data ? result.data : result;
+
+    this.checkResult = rawData as GeoCheckResult;
+    this.saveToStorage();
+    this.notifyCheckResultChange(rawData);
+    return rawData;
   }
 
   /**

@@ -99,6 +99,16 @@ class ApiClient {
 
     try {
       const response = await fetch(url, fetchConfig);
+
+      // 处理无内容的成功响应 (204 No Content)
+      if (response.status === 204) {
+        return {
+          code: 0,
+          message: 'Success',
+          data: null as any,
+        };
+      }
+
       const result = await response.json();
 
       // 处理 403 地理围栏错误
@@ -114,6 +124,28 @@ class ApiClient {
         localStorage.removeItem('user');
         // 触发事件
         window.dispatchEvent(new CustomEvent('auth-expired'));
+      }
+
+      // 智能兼容处理 V3
+      if (response.ok) {
+        // 1. 标准 Code 包装模式 (code = 0 or 200)
+        if ((result.code === 0 || result.code === 200)) {
+          return result;
+        }
+
+        // 2. V3 201 Created 模式 (通常直接返回数据对象，无 code)
+        // 或者 V3 200 OK 直接返回数据模式
+        // 2. V3 模式: { data, message, ... } 无 code
+        // 自动映射为标准 ApiResult
+        if (result.code === undefined) {
+          // 如果存在 data 字段，则将其作为 data，否则整个 result 作为 data
+          const hasDataField = result.data !== undefined;
+          return {
+            code: 0,
+            message: result.message || 'Success',
+            data: hasDataField ? result.data : result
+          };
+        }
       }
 
       return result;

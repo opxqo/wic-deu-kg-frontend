@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Lock, Mail, ArrowRight, Eye, EyeOff, Loader2, ChevronLeft } from 'lucide-react';
@@ -39,7 +39,7 @@ const Login: React.FC = () => {
   const { t } = useLanguage();
   const { login } = useUser();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage('');
@@ -49,6 +49,10 @@ const Login: React.FC = () => {
       if (isLogin) {
         // 登录流程
         const result = await authService.login({ studentId, password });
+
+        if (!result.data || !result.data.user) {
+          throw new Error('登录响应格式错误：缺少用户信息');
+        }
 
         // 保存令牌和用户信息到本地存储
         authService.saveAuth(result.data.token, result.data.user);
@@ -90,23 +94,39 @@ const Login: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLogin, studentId, password, username, name, email, login, navigate]);
 
   // 激活账号
-  const handleActivate = async (e: React.FormEvent) => {
+  const handleActivate = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage('');
     setSuccessMessage('');
 
     try {
-      await authService.activateAccount(activationEmail, activationCode);
-      setSuccessMessage('账号激活成功！请登录');
+      const result = await authService.activateAccount(activationEmail, activationCode);
+
+      if (result.code === 0 && result.data) {
+        // 使用返回的激活结果显示更友好的消息
+        const activation = result.data;
+        setSuccessMessage(
+          `账号激活成功！欢迎 ${activation.username}（学号：${activation.studentId}）\n请使用学号和密码登录`
+        );
+        setShowActivation(false);
+        setActivationCode('');
+        setActivationEmail('');
+        setEmail('');
+        setStudentId('');
+      } else {
+        throw new Error(result.message || '激活失败，请检查验证码是否正确');
+      }
+
       setShowActivation(false);
       setActivationCode('');
       setActivationEmail('');
       setEmail('');
       setStudentId('');
+
       // 切换到登录页面
       setIsLogin(true);
     } catch (error) {
@@ -114,10 +134,10 @@ const Login: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [activationEmail, activationCode]);
 
   // 重新发送验证码
-  const handleResendCode = async () => {
+  const handleResendCode = useCallback(async () => {
     if (resendCooldown > 0) return;
 
     setIsLoading(true);
@@ -142,15 +162,15 @@ const Login: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [resendCooldown, activationEmail]);
 
   // 返回注册页面
-  const handleBackToRegister = () => {
+  const handleBackToRegister = useCallback(() => {
     setShowActivation(false);
     setActivationCode('');
     setSuccessMessage('');
     setErrorMessage('');
-  };
+  }, []);
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-gray-50 dark:bg-slate-950 flex items-center justify-center p-4 md:p-8 transition-colors">

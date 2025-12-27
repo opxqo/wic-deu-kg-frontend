@@ -1,9 +1,4 @@
-import { ApiResult } from './authService';
-import { API_BASE_URL as ConfigApiBase } from '../src/config/apiConfig';
-
-// 使用相对路径以触发 Vite Proxy转发到 http://localhost:8080
-// @ts-ignore
-const API_BASE_URL = ConfigApiBase;
+import { apiClient, ApiResult } from './apiClient';
 
 export interface UserCardVO {
     studentId: string;
@@ -14,30 +9,19 @@ export interface UserCardVO {
     major: string;
     bio: string | null;
     roleName: string;
-    joinedAt: string; // "2025-12-26T19:51:45"
+    createdAt: string; // "2025-12-26T19:51:45"
 }
 
 export const userService = {
     /**
-     * 获取用户公开卡片信息
-     * Endpoint: /api/public/users/card/{studentId}
-     * @param userId 用户标识（学号或ID）
+     * 获取用户公开卡片信息 (V3)
+     * Endpoint: GET /api/users/{studentId}
+     * @param userId 用户标识（学号）
      */
     async getUserCard(userId: number | string): Promise<ApiResult<UserCardVO>> {
-        // 根据 Swagger: /api/public/users/card/{studentId}
-        const response = await fetch(`${API_BASE_URL}/api/public/users/card/${userId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        const result = await response.json();
-
-        if (!response.ok || result.code !== 0) {
-            throw new Error(result.message || '获取用户信息失败');
-        }
-
-        return result;
+        // V3 接口地址: /api/users/public/{studentId}
+        // 响应 200 OK 直接返回 UserCardVO (无 code) -> apiClient 会自动包装
+        // 响应 404 返回 ApiResponseUserCardVO (有 code) -> apiClient 原样返回
+        return apiClient.get<UserCardVO>(`/api/users/public/${userId}`);
     }
 };

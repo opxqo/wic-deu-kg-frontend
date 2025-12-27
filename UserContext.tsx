@@ -17,10 +17,11 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
 
-  // 页面加载时从 localStorage 恢复登录状态
+  // 页面加载时从 localStorage 恢复登录状态，并获取最新用户信息
   useEffect(() => {
     const savedUser = authService.getUser();
     if (savedUser && authService.isAuthenticated()) {
+      // 1. 先用本地缓存快速渲染
       setUser({
         name: savedUser.name,
         id: savedUser.studentId,
@@ -30,7 +31,24 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         bio: savedUser.bio,
         avatar: savedUser.avatar,
         joinDate: savedUser.createdAt,
-      });
+      } as UserProfile);
+
+      // 2. 异步获取最新用户信息 (GET /api/users/me)
+      authService.fetchCurrentUser().then(result => {
+        if ((result.code === 0 || result.code === 200) && result.data) {
+          const freshUser = result.data;
+          setUser({
+            name: freshUser.name,
+            id: freshUser.studentId,
+            email: freshUser.email,
+            department: freshUser.department,
+            major: freshUser.major,
+            bio: freshUser.bio,
+            avatar: freshUser.avatar,
+            joinDate: freshUser.createdAt,
+          } as UserProfile);
+        }
+      }).catch(console.error);
     }
   }, []);
 
@@ -57,9 +75,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         major: data.major,
         bio: data.bio,
       });
-      
-      // 检查响应状态码并更新本地状态
-      if (result.code === 200 && result.data) {
+
+      // 检查响应状态码 (兼容 0 和 200)
+      if ((result.code === 0 || result.code === 200) && result.data) {
         setUser(prev => prev ? {
           ...prev,
           name: result.data.name || prev.name,
@@ -81,9 +99,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const uploadAvatar = async (file: File) => {
     try {
       const result = await authService.uploadAvatar(file);
-      
-      // 检查响应状态码并更新本地状态
-      if (result.code === 200 && result.data) {
+
+      // 检查响应状态码 (兼容 0 和 200)
+      if ((result.code === 0 || result.code === 200) && result.data) {
         setUser(prev => prev ? {
           ...prev,
           avatar: result.data.avatar,

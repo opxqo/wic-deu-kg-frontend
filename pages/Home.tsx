@@ -218,7 +218,7 @@ const Home: React.FC = () => {
       try {
         setLoading(true);
         const result = await departmentService.getAllDepartments();
-        if (result.code === 200 && result.data) {
+        if ((result.code === 0 || result.code === 200) && result.data) {
           setDepartments(result.data);
         }
       } catch (error) {

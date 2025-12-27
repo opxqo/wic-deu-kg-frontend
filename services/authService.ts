@@ -1,7 +1,4 @@
-import { API_BASE_URL as ConfigApiBase } from '../src/config/apiConfig';
-
-// @ts-ignore
-const API_BASE_URL = ConfigApiBase;
+import { apiClient, ApiResult } from './apiClient';
 
 // 登录请求参数
 export interface LoginRequest {
@@ -37,44 +34,44 @@ export interface UserVO {
   createdAt: string;
 }
 
-// 登录响应
+// 登录响应 (V3: 包含 token 和用户信息的混合体)
 export interface LoginResponse {
   token: string;
-  tokenType: string;
-  expiresIn: number;
   user: UserVO;
 }
 
-// API 响应包装
-export interface ApiResult<T> {
-  code: number;
+// 激活结果 VO
+export interface ActivationResultVO {
+  success: boolean;
   message: string;
-  data: T;
+  username: string;
+  studentId: string;
+  email: string;
+  activatedAt: string;
 }
 
 // 登录 API
 export const authService = {
   /**
-   * 用户登录
-   * @param data 登录请求参数（学号和密码）
-   * @returns 登录响应（JWT令牌和用户信息）
+   * 用户登录 (V3)
+   * ENDPOINT: POST /api/sessions
    */
   async login(data: LoginRequest): Promise<ApiResult<LoginResponse>> {
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
+    // V3 登录接口直接返回 { token: "...", user: { ... } }
+    // 状态码 201 Created
+    const result = await apiClient.post<LoginResponse>('/api/sessions', data);
 
-    const result = await response.json();
-
-    // 处理不同的响应状态码
-    if (!response.ok || result.code !== 0) {
-      // 401: 学号或密码错误
-      // 403: 账号未激活或已被禁用
-      throw new Error(result.message || '登录失败');
+    // 如果成功，自动保存
+    if (result.code === 0 && result.data) {
+      // V3 接口可能直接返回 UserVO 在 data 里，或者 data 本身包含 token/user ??
+      // 根据 apiClient 的智能兼容：
+      // 如果后端返回 201 Created: { token: "...", user: {...} }
+      // apiClient 会将其包装为 { code:0, data: { token, user } }
+      // 所以 result.data 就是那个对象
+      const responseData = result.data as any; // 临时断言，需确认结构
+      if (responseData.token && responseData.user) {
+        this.saveAuth(responseData.token, responseData.user);
+      }
     }
 
     return result;
@@ -82,8 +79,6 @@ export const authService = {
 
   /**
    * 保存登录凭证到本地存储
-   * @param token JWT令牌
-   * @param user 用户信息
    */
   saveAuth(token: string, user: UserVO): void {
     localStorage.setItem('token', token);
@@ -122,26 +117,13 @@ export const authService = {
 
   /**
    * 用户登出
-   * 调用后端接口注销登录状态，并清除本地存储
    */
   async logout(): Promise<void> {
-    const token = this.getToken();
-
     try {
-      if (token) {
-        await fetch(`${API_BASE_URL}/api/auth/logout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-      }
+      await apiClient.delete('/api/sessions');
     } catch (error) {
-      // 即使后端请求失败，也要清除本地存储
       console.error('登出请求失败:', error);
     } finally {
-      // 无论如何都清除本地存储
       this.clearAuth();
     }
   },
@@ -154,79 +136,40 @@ export const authService = {
   },
 
   /**
-   * 用户注册
-   * @param data 注册请求参数
-   * @returns 注册成功后返回用户信息
+   * 用户注册 (V3)
+   * ENDPOINT: POST /api/users
    */
   async register(data: RegisterRequest): Promise<ApiResult<UserVO>> {
-    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok || result.code !== 0) {
-      // 400: 学号/用户名/邮箱已被使用
-      throw new Error(result.message || '注册失败');
-    }
-
-    return result;
+    // V3 注册接口直接返回 UserVO
+    // 状态码 201 Created
+    return apiClient.post<UserVO>('/api/users', data);
   },
 
   /**
-   * 激活账号
-   * @param email 邮箱
-   * @param code 6位验证码
+   * 激活账号 (V3)
+   * ENDPOINT: PATCH /api/users/me/status
    */
-  async activateAccount(email: string, code: string): Promise<ApiResult<string>> {
-    const response = await fetch(`${API_BASE_URL}/api/auth/activate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, code }),
+  async activateAccount(email: string, code: string): Promise<ApiResult<ActivationResultVO>> {
+    // 根据文档 (全部接口.md:8015) 确认接口为 PATCH /api/users/me/status
+    return apiClient.request<ActivationResultVO>('/api/users/me/status', {
+      method: 'PATCH',
+      body: { email, code }
     });
-
-    const result = await response.json();
-
-    if (!response.ok || result.code !== 0) {
-      throw new Error(result.message || '激活失败');
-    }
-
-    return result;
   },
 
   /**
    * 重新发送激活验证码
-   * @param email 邮箱
    */
   async resendActivationCode(email: string): Promise<ApiResult<string>> {
-    const response = await fetch(`${API_BASE_URL}/api/auth/send-activation-code?email=${encodeURIComponent(email)}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const result = await response.json();
-
-    if (!response.ok || result.code !== 0) {
-      throw new Error(result.message || '发送失败');
-    }
-
-    return result;
+    return apiClient.post<string>(`/api/auth/send-activation-code?email=${encodeURIComponent(email)}`);
   },
 
   /**
-   * 更新个人资料
-   * @param data 更新的字段（name, email, department, major, bio, avatar）
-   * @returns 更新后的用户信息
+   * 更新个人资料 (V3)
+   * ENDPOINT: PATCH /api/users/me
    */
   async updateProfile(data: {
+    username?: string; // V3 允许改用户名?
     name?: string;
     email?: string;
     department?: string;
@@ -234,69 +177,52 @@ export const authService = {
     bio?: string;
     avatar?: string;
   }): Promise<ApiResult<UserVO>> {
-    const token = this.getToken();
-    if (!token) {
-      throw new Error('未登录');
-    }
-
-    const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
+    // V3 使用 PATCH
+    const result = await apiClient.request<UserVO>('/api/users/me', {
+      method: 'PATCH',
+      body: data
     });
 
-    const result = await response.json();
-
-    if (!response.ok || result.code !== 0) {
-      throw new Error(result.message || '更新失败');
-    }
-
-    // 更新本地存储的用户信息
-    if (result.data) {
+    if (result.code === 0 && result.data) {
       localStorage.setItem('user', JSON.stringify(result.data));
     }
-
     return result;
   },
 
   /**
-   * 上传用户头像
-   * @param file 头像文件
-   * @returns 更新后的用户信息
+   * 上传用户头像 (V3)
+   * 1. Upload to /api/images
+   * 2. Update profile with avatar URL
    */
   async uploadAvatar(file: File): Promise<ApiResult<UserVO>> {
-    const token = this.getToken();
-    if (!token) {
-      throw new Error('未登录');
+    // 1. 上传图片
+    // FormData: file, title=avatar
+    const uploadRes = await apiClient.upload<any>('/api/images', file, 'file', { title: 'avatar' });
+
+    if (uploadRes.code !== 0 || !uploadRes.data) {
+      throw new Error(uploadRes.message || '头像上传失败');
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await fetch(`${API_BASE_URL}/api/auth/avatar`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    const result = await response.json();
-
-    if (!response.ok || result.code !== 0) {
-      throw new Error(result.message || '上传失败');
+    const imageUrl = uploadRes.data.imageUrl || uploadRes.data.url; // 需确认返回字段
+    if (!imageUrl) {
+      throw new Error('无法获取图片地址');
     }
 
-    // 更新本地存储的用户信息
-    if (result.data) {
+    // 2. 更新资料
+    return this.updateProfile({ avatar: imageUrl });
+  },
+
+  /** 
+   * 获取当前用户信息 (V3)
+   * ENDPOINT: GET /api/users/me
+   */
+  async fetchCurrentUser(): Promise<ApiResult<UserVO>> {
+    const result = await apiClient.get<UserVO>('/api/users/me');
+    if (result.code === 0 && result.data) {
       localStorage.setItem('user', JSON.stringify(result.data));
     }
-
     return result;
-  },
+  }
 };
 
 export default authService;

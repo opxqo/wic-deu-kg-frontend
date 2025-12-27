@@ -1,6 +1,4 @@
-import { API_BASE_URL } from '../src/config/apiConfig';
-// API service for Senior Messages
-const API_BASE = API_BASE_URL;
+import { apiClient, ApiResult } from './apiClient';
 
 // Types matching backend schema
 export interface FontInfo {
@@ -47,134 +45,65 @@ export interface MessageFont {
     sortOrder: number;
 }
 
-// Helper to get auth token
-const getAuthToken = (): string | null => {
-    return localStorage.getItem('token');
-};
-
-// Helper to create headers
-const createHeaders = (includeAuth: boolean = false): HeadersInit => {
-    const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-    };
-    if (includeAuth) {
-        const token = getAuthToken();
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-    }
-    return headers;
-};
-
-// API functions
+// API public functions
 export const messageApi = {
-    // Get messages list (public, but auth optional for liked status)
-    async getMessages(page: number = 1, size: number = 20, keyword?: string): Promise<{ data: PageSeniorMessageVO }> {
-        const token = getAuthToken();
-        const headers: HeadersInit = {};
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
+    // Get messages list (public)
+    // V3: GET /api/messages
+    async getMessages(page: number = 1, size: number = 20, keyword?: string): Promise<ApiResult<PageSeniorMessageVO>> {
+        const params = new URLSearchParams();
+        params.append('page', page.toString());
+        params.append('size', size.toString());
+        if (keyword) params.append('keyword', keyword.trim());
 
-        const queryParams = new URLSearchParams({
-            page: page.toString(),
-            size: size.toString(),
-        });
-
-        if (keyword && keyword.trim()) {
-            queryParams.append('keyword', keyword.trim());
-        }
-
-        const response = await fetch(
-            `${API_BASE}/api/public/messages?${queryParams.toString()}`,
-            { headers }
-        );
-
-        const result = await response.json();
-
-        if (!response.ok || result.code !== 0) {
-            throw new Error(`Failed to fetch messages: ${response.statusText}`);
-        }
-
-        return result;
+        return apiClient.get<PageSeniorMessageVO>(`/api/messages?${params.toString()}`);
     },
 
-    // Get my messages (requires auth)
-    async getMyMessages(page: number = 1, size: number = 20): Promise<{ data: PageSeniorMessageVO }> {
-        const response = await fetch(
-            `${API_BASE}/api/messages/my?page=${page}&size=${size}`,
-            { headers: createHeaders(true) }
-        );
+    // Get my messages (auth)
+    // V3: GET /api/users/me/messages (猜测) or GET /api/messages?my=true
+    // 暂定: /api/users/me/messages
+    async getMyMessages(page: number = 1, size: number = 20): Promise<ApiResult<PageSeniorMessageVO>> {
+        const params = new URLSearchParams();
+        params.append('page', page.toString());
+        params.append('size', size.toString());
 
-        const result = await response.json();
-
-        if (!response.ok || result.code !== 0) {
-            throw new Error(`Failed to fetch my messages: ${response.statusText}`);
-        }
-
-        return result;
+        // 尝试 /api/users/me/messages
+        return apiClient.get<PageSeniorMessageVO>(`/api/users/me/messages?${params.toString()}`);
     },
 
-    // Create new message (requires auth)
-    async createMessage(data: CreateMessageRequest): Promise<{ data: SeniorMessageVO }> {
-        const response = await fetch(`${API_BASE}/api/messages`, {
-            method: 'POST',
-            headers: createHeaders(true),
-            body: JSON.stringify(data),
-        });
-
-        const result = await response.json();
-
-        if (!response.ok || result.code !== 0) {
-            const error = result;
-            throw new Error(error.message || 'Failed to create message');
-        }
-
-        return result;
+    // Create new message (auth)
+    // V3: POST /api/messages
+    async createMessage(data: CreateMessageRequest): Promise<ApiResult<SeniorMessageVO>> {
+        return apiClient.post<SeniorMessageVO>('/api/messages', data);
     },
 
-    // Toggle like (requires auth)
-    async toggleLike(messageId: number): Promise<{ data: number }> {
-        const response = await fetch(`${API_BASE}/api/messages/${messageId}/like`, {
-            method: 'POST',
-            headers: createHeaders(true),
-        });
-
-        const result = await response.json();
-
-        if (!response.ok || result.code !== 0) {
-            throw new Error('Failed to toggle like');
+    // Toggle like (auth)
+    // V3: POST /api/messages/{id}/likes
+    async toggleLike(messageId: number): Promise<ApiResult<number>> {
+        // Assume API returns count or object. The old code expected number.
+        // Let's use generic any or check doc.
+        // Assuming /api/messages/{id}/likes returns { liked: boolean, likeCount: number } usually.
+        // But frontend expects number? Old code cast result as number.
+        // Adapt return type if needed.
+        const res = await apiClient.post<any>(`/api/messages/${messageId}/likes`);
+        // If data is { likeCount: 123 }, return that.
+        // If data is just number (unlikely in V3 standard object), return it.
+        if (res.code === 0 && res.data && typeof res.data.likeCount === 'number') {
+            return { ...res, data: res.data.likeCount };
         }
-
-        return result;
+        return res;
     },
 
-    // Delete message (requires auth, own message only)
+    // Delete message (auth)
+    // V3: DELETE /api/messages/{id}
     async deleteMessage(messageId: number): Promise<void> {
-        const response = await fetch(`${API_BASE}/api/messages/${messageId}`, {
-            method: 'DELETE',
-            headers: createHeaders(true),
-        });
-
-        const result = await response.json() as { code: number };
-
-        if (!response.ok || result.code !== 0) {
-            throw new Error('Failed to delete message');
-        }
+        await apiClient.delete(`/api/messages/${messageId}`);
     },
 
     // Get available fonts
-    async getFonts(): Promise<{ data: MessageFont[] }> {
-        const response = await fetch(`${API_BASE}/api/public/messages/fonts`);
-
-        const result = await response.json();
-
-        if (!response.ok || result.code !== 0) {
-            throw new Error('Failed to fetch fonts');
-        }
-
-        return result;
-    },
+    // V3: GET /api/messages/fonts (public)
+    async getFonts(): Promise<ApiResult<MessageFont[]>> {
+        return apiClient.get<MessageFont[]>('/api/messages/fonts');
+    }
 };
 
 export default messageApi;
