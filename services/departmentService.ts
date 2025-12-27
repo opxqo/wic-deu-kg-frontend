@@ -1,5 +1,5 @@
 // 学部服务 - 对接后端 API
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = '';
 
 // 辅导员信息
 export interface CounselorInfo {
@@ -47,7 +47,7 @@ const departmentService = {
     });
 
     const result = await response.json();
-    
+
     if (!response.ok || result.code !== 200) {
       throw new Error(result.message || '获取学部列表失败');
     }
@@ -69,7 +69,7 @@ const departmentService = {
     });
 
     const result = await response.json();
-    
+
     if (!response.ok || result.code !== 200) {
       throw new Error(result.message || '获取学部详情失败');
     }

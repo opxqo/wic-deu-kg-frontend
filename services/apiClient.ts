@@ -6,7 +6,7 @@
 import { geoLocationService } from './geoLocationService';
 
 // @ts-ignore - Vite 环境变量
-const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || 'http://localhost:8080';
+const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || '';
 
 // API 响应包装
 export interface ApiResult<T> {
@@ -78,7 +78,7 @@ class ApiClient {
   async request<T>(endpoint: string, config: RequestConfig = {}): Promise<ApiResult<T>> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers = this.buildHeaders(config);
-    
+
     const fetchConfig: RequestInit = {
       ...config,
       headers,
@@ -159,7 +159,7 @@ class ApiClient {
   async upload<T>(endpoint: string, file: File, fieldName: string = 'file', extraData?: Record<string, string>): Promise<ApiResult<T>> {
     const formData = new FormData();
     formData.append(fieldName, file);
-    
+
     if (extraData) {
       Object.entries(extraData).forEach(([key, value]) => {
         formData.append(key, value);

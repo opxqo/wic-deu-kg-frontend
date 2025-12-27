@@ -1,5 +1,5 @@
 // Gallery API 服务
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = '/api';
 
 // 类型定义
 export interface UserInfo {

@@ -1,5 +1,5 @@
 // API 基础配置
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = '';
 
 // 登录请求参数
 export interface LoginRequest {
@@ -67,7 +67,7 @@ export const authService = {
     });
 
     const result = await response.json();
-    
+
     // 处理不同的响应状态码
     if (!response.ok) {
       // 401: 学号或密码错误
@@ -124,7 +124,7 @@ export const authService = {
    */
   async logout(): Promise<void> {
     const token = this.getToken();
-    
+
     try {
       if (token) {
         await fetch(`${API_BASE_URL}/api/auth/logout`, {
@@ -166,7 +166,7 @@ export const authService = {
     });
 
     const result = await response.json();
-    
+
     if (!response.ok) {
       // 400: 学号/用户名/邮箱已被使用
       throw new Error(result.message || '注册失败');
@@ -190,7 +190,7 @@ export const authService = {
     });
 
     const result = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(result.message || '激活失败');
     }
@@ -211,7 +211,7 @@ export const authService = {
     });
 
     const result = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(result.message || '发送失败');
     }
@@ -247,7 +247,7 @@ export const authService = {
     });
 
     const result = await response.json();
-    
+
     if (!response.ok || result.code !== 200) {
       throw new Error(result.message || '更新失败');
     }
@@ -283,7 +283,7 @@ export const authService = {
     });
 
     const result = await response.json();
-    
+
     if (!response.ok || result.code !== 200) {
       throw new Error(result.message || '上传失败');
     }

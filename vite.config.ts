@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
       proxy: {
         '/api': {
-          target: 'http://localhost:8080',
+          target: 'https://zeabur-springboot.168888868.xyz',
           changeOrigin: true,
           secure: false
         }

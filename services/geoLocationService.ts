@@ -4,7 +4,7 @@
  */
 
 // @ts-ignore - Vite 环境变量
-const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || 'http://localhost:8080';
+const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || '';
 
 // 地理围栏配置
 export interface GeoConfig {
@@ -227,13 +227,13 @@ class GeoLocationService {
   async fetchGeoConfig(): Promise<GeoConfig> {
     const response = await fetch(`${API_BASE_URL}/api/geo/config`);
     const result = await response.json();
-    
+
     if (result.code === 200) {
       this.geoConfig = result.data;
       this.saveToStorage();
       return result.data;
     }
-    
+
     throw new Error(result.message || '获取配置失败');
   }
 
@@ -241,7 +241,7 @@ class GeoLocationService {
    * 向后端校验位置
    */
   async checkLocation(latitude?: number, longitude?: number): Promise<GeoCheckResult> {
-    const location = latitude !== undefined && longitude !== undefined 
+    const location = latitude !== undefined && longitude !== undefined
       ? { latitude, longitude }
       : this.currentLocation;
 
@@ -257,14 +257,14 @@ class GeoLocationService {
     });
 
     const result = await response.json();
-    
+
     if (result.code === 200) {
       this.checkResult = result.data;
       this.saveToStorage();
       this.notifyCheckResultChange(result.data);
       return result.data;
     }
-    
+
     throw new Error(result.message || '位置校验失败');
   }
 
@@ -276,7 +276,7 @@ class GeoLocationService {
     try {
       // 先获取配置
       await this.fetchGeoConfig();
-      
+
       // 如果地理围栏未启用，直接返回允许
       if (!this.geoConfig?.enabled) {
         const result: GeoCheckResult = {
