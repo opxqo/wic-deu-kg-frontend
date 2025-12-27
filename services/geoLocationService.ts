@@ -3,9 +3,10 @@
  * 负责获取用户位置、校验地理围栏、在请求中附加位置信息
  */
 
-// @ts-ignore - Vite 环境变量
+import { API_BASE_URL as ConfigApiBase } from '../config/apiConfig';
+
 // @ts-ignore
-const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || (import.meta.env.DEV ? '' : 'https://zeabur-springboot.168888868.xyz');
+const API_BASE_URL = ConfigApiBase;
 
 // 地理围栏配置
 export interface GeoConfig {

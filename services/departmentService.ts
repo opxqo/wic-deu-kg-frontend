@@ -1,6 +1,7 @@
-// 学部服务 - 对接后端 API
+import { API_BASE_URL as ConfigApiBase } from '../config/apiConfig';
+
 // @ts-ignore
-const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || (import.meta.env.DEV ? '' : 'https://zeabur-springboot.168888868.xyz');
+const API_BASE_URL = ConfigApiBase;
 
 // 辅导员信息
 export interface CounselorInfo {

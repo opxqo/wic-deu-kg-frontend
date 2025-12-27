@@ -1,5 +1,6 @@
+import { API_BASE_URL } from '../config/apiConfig';
 // API service for Senior Messages
-const API_BASE = 'http://127.0.0.1:8080';
+const API_BASE = API_BASE_URL;
 
 // Types matching backend schema
 export interface FontInfo {

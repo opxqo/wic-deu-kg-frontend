@@ -1,6 +1,7 @@
-// API 基础配置
+import { API_BASE_URL as ConfigApiBase } from '../config/apiConfig';
+
 // @ts-ignore
-const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || (import.meta.env.DEV ? '' : 'https://zeabur-springboot.168888868.xyz');
+const API_BASE_URL = ConfigApiBase;
 
 // 登录请求参数
 export interface LoginRequest {

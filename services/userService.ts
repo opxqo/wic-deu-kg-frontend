@@ -1,8 +1,9 @@
 import { ApiResult } from './authService';
+import { API_BASE_URL as ConfigApiBase } from '../config/apiConfig';
 
 // 使用相对路径以触发 Vite Proxy转发到 http://localhost:8080
 // @ts-ignore
-const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || (import.meta.env.DEV ? '' : 'https://zeabur-springboot.168888868.xyz');
+const API_BASE_URL = ConfigApiBase;
 
 export interface UserCardVO {
     studentId: string;
