@@ -6,7 +6,8 @@
 import { geoLocationService } from './geoLocationService';
 
 // @ts-ignore - Vite 环境变量
-const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || '';
+// @ts-ignore
+const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || (import.meta.env.DEV ? '' : 'https://zeabur-springboot.168888868.xyz');
 
 // API 响应包装
 export interface ApiResult<T> {

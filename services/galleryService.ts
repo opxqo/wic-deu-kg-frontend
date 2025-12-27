@@ -1,6 +1,6 @@
 // Gallery API 服务
 // @ts-ignore
-const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL + '/api' : '/api');
+const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL + '/api' : (import.meta.env.DEV ? '/api' : 'https://zeabur-springboot.168888868.xyz/api'));
 
 // 类型定义
 export interface UserInfo {

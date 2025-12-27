@@ -1,6 +1,6 @@
 // API 基础配置
 // @ts-ignore
-const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || '';
+const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || (import.meta.env.DEV ? '' : 'https://zeabur-springboot.168888868.xyz');
 
 // 登录请求参数
 export interface LoginRequest {
