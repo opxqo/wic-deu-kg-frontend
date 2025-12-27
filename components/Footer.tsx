@@ -8,6 +8,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../LanguageContext';
+import { userService, UserAvatarVO } from '../services/userService';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 // --- Sub-components ---
 
@@ -114,6 +116,39 @@ const FooterLink: React.FC<FooterLinkProps> = ({ href, children, icon, external 
   );
 };
 
+const UserAvatarList: React.FC = () => {
+  const [users, setUsers] = React.useState<UserAvatarVO[]>([]);
+
+  React.useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await userService.getUsersWithAvatar();
+        if ((res.code === 0 || res.code === 200) && res.data) {
+          setUsers(res.data.slice(-8)); // Limit to last 8
+        }
+      } catch (error) {
+        console.error("Failed to fetch user avatars", error);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  if (users.length === 0) return null;
+
+  return (
+    <div className="flex -space-x-2 overflow-hidden py-2 pl-1">
+      {users.map((user) => (
+        <Link to={`/user/${user.studentId}`} key={user.studentId} title={user.name || 'User'}>
+          <Avatar className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-slate-900 transition-transform hover:scale-110 hover:z-10 bg-slate-200 dark:bg-slate-800">
+            <AvatarImage src={user.avatar} alt={user.name || 'User'} />
+            <AvatarFallback>{(user.name || 'Wiki').slice(0, 2)}</AvatarFallback>
+          </Avatar>
+        </Link>
+      ))}
+    </div>
+  );
+};
+
 // --- Main Component ---
 
 const Footer: React.FC = () => {
@@ -127,10 +162,10 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-x-12 gap-y-6 lg:gap-y-0 mb-8">
 
           {/* Column 1: Brand Info (Always Visible) */}
-          <div className="text-center lg:text-left space-y-4 mb-4 lg:mb-0">
+          <div className="text-center lg:text-left space-y-2 mb-2 lg:mb-0">
             <Link to="/" className="inline-block group">
-              <div className="flex flex-col lg:flex-row items-center lg:items-end gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width="539" height="140" viewBox="0 0 539 140" fill="none" className="h-12 w-auto dark:invert dark:opacity-90 transition-transform group-hover:scale-105 duration-300">
+              <div className="flex flex-col lg:flex-row items-center lg:items-end gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width="539" height="140" viewBox="0 0 539 140" fill="none" className="h-10 w-auto dark:invert dark:opacity-90 transition-transform group-hover:scale-105 duration-300">
                   <defs>
                     <style>{`
                             @font-face {
@@ -220,10 +255,15 @@ const Footer: React.FC = () => {
             </Link>
 
             {/* Social Icons */}
-            <div className="flex items-center justify-center lg:justify-start gap-3 pt-2">
+            <div className="flex items-center justify-center lg:justify-start gap-3 pt-1">
               <SocialLink href="#" icon={<MessageCircle size={16} />} label="WeChat" />
               <SocialLink href="#" icon={<Globe size={16} />} label="Weibo" />
               <SocialLink href="https://github.com/opxqo" icon={<Github size={16} />} label="GitHub" />
+            </div>
+
+            {/* User Avatars Grid - Compact Spacing */}
+            <div className="pt-2 flex flex-col items-center lg:items-start">
+              <UserAvatarList />
             </div>
           </div>
 
@@ -233,6 +273,10 @@ const Footer: React.FC = () => {
             <FooterLink href="#" external>{t('footer.admissions')}</FooterLink>
             <FooterLink href="#" external>{t('footer.employment')}</FooterLink>
             <FooterLink href="mailto:dean@wic.edu.kg" icon={<Mail size={14} />}>Dean's Mailbox</FooterLink>
+
+            {/* User Avatars Grid */}
+
+
           </FooterSection>
 
           {/* Column 3: Campus Life (New) */}

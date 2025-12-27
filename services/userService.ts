@@ -23,5 +23,19 @@ export const userService = {
         // 响应 200 OK 直接返回 UserCardVO (无 code) -> apiClient 会自动包装
         // 响应 404 返回 ApiResponseUserCardVO (有 code) -> apiClient 原样返回
         return apiClient.get<UserCardVO>(`/api/users/public/${userId}`);
+    },
+
+    /**
+     * 获取带有头像的用户列表 (Footer展示)
+     * Endpoint: GET /api/users/public/avatars
+     */
+    async getUsersWithAvatar(): Promise<ApiResult<UserAvatarVO[]>> {
+        return apiClient.get<UserAvatarVO[]>('/api/users/public/avatars');
     }
 };
+
+export interface UserAvatarVO {
+    studentId: string;
+    name?: string;
+    avatar: string;
+}
