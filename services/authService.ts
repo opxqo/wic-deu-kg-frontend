@@ -1,5 +1,6 @@
 // API 基础配置
-const API_BASE_URL = '';
+// @ts-ignore
+const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || '';
 
 // 登录请求参数
 export interface LoginRequest {

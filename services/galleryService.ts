@@ -1,5 +1,6 @@
 // Gallery API 服务
-const API_BASE_URL = '/api';
+// @ts-ignore
+const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL + '/api' : '/api');
 
 // 类型定义
 export interface UserInfo {

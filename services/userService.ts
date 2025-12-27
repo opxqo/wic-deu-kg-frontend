@@ -1,7 +1,8 @@
 import { ApiResult } from './authService';
 
 // 使用相对路径以触发 Vite Proxy转发到 http://localhost:8080
-const API_BASE_URL = '';
+// @ts-ignore
+const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || '';
 
 export interface UserCardVO {
     studentId: string;

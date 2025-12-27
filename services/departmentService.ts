@@ -1,5 +1,6 @@
 // 学部服务 - 对接后端 API
-const API_BASE_URL = '';
+// @ts-ignore
+const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL as string) || '';
 
 // 辅导员信息
 export interface CounselorInfo {
