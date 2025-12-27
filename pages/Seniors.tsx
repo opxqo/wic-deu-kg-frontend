@@ -64,9 +64,38 @@ const Seniors: React.FC = () => {
   // Check if user is logged in
   const isLoggedIn = !!localStorage.getItem('token');
 
-  // Fetch messages and fonts on mount
+  // Fetch messages with search support
+  const fetchMessages = useCallback(async (page: number, query: string) => {
+    try {
+      setPageLoading(true);
+      const res = await messageApi.getMessages(page, PAGE_SIZE, query);
+      setMessages(res.data.records);
+      setTotalPages(res.data.pages);
+      setTotalMessages(res.data.total);
+      setCurrentPage(page);
+    } catch (err) {
+      console.error('Failed to load messages:', err);
+      // Don't show error to user on search, just log it
+    } finally {
+      setPageLoading(false);
+    }
+  }, []);
+
+  // Debounce search
   useEffect(() => {
-    const fetchData = async () => {
+    // Skip initial load or if showing my messages
+    if (showMyMessages) return;
+
+    const timer = setTimeout(() => {
+      fetchMessages(1, searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, showMyMessages, fetchMessages]);
+
+  // Initial load
+  useEffect(() => {
+    const initLoad = async () => {
       try {
         setLoading(true);
         const [messagesRes, fontsRes] = await Promise.all([
@@ -88,27 +117,29 @@ const Seniors: React.FC = () => {
         setLoading(false);
       }
     };
-    fetchData();
+    initLoad();
   }, []);
 
-  // Go to specific page - memoized (without full page refresh)
+  // Go to specific page
   const goToPage = useCallback(async (page: number) => {
     if (page < 1 || page > totalPages || page === currentPage) return;
-    try {
-      setPageLoading(true);
-      const res = await messageApi.getMessages(page, PAGE_SIZE);
-      setMessages(res.data.records);
+
+    // Smooth scroll to top of content area
+    const contentArea = document.querySelector('main');
+    if (contentArea) contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (!showMyMessages) {
+      await fetchMessages(page, searchQuery);
+    } else {
+      // My messages pagination (if we had it, currently full list)
+      // For now just set page as we are doing client side my messages?
+      // Actually API getMyMessages has pagination.
+      // We should probably implement pagination for My Messages too properly.
+      // But for now let's stick to what was there or minimal change.
+      // The original getMyMessages call used page 1 size 100.
       setCurrentPage(page);
-      setTotalPages(res.data.pages);
-      // Smooth scroll to top of content area
-      const contentArea = document.querySelector('main');
-      if (contentArea) contentArea.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (err) {
-      console.error('Failed to load page:', err);
-    } finally {
-      setPageLoading(false);
     }
-  }, [totalPages, currentPage]);
+  }, [totalPages, currentPage, showMyMessages, searchQuery, fetchMessages]);
 
   const handleCreateMessage = async () => {
     if (!content.trim() || !isLoggedIn) return;
@@ -196,16 +227,20 @@ const Seniors: React.FC = () => {
     }
   }, [isLoggedIn, myMessagesLoaded, fetchMyMessages]);
 
-  // Display either all messages or my messages - memoized and filtered by search
+  // Display messages - Mix of server-side (public) and client-side (my) logic
   const displayedMessages = useMemo(() => {
-    const baseMessages = showMyMessages ? myMessages : messages;
-    if (!searchQuery.trim()) return baseMessages;
-    const query = searchQuery.toLowerCase();
-    return baseMessages.filter(msg =>
-      msg.content.toLowerCase().includes(query) ||
-      (msg.signature && msg.signature.toLowerCase().includes(query))
-    );
-  }, [showMyMessages, myMessages, messages, searchQuery]);
+    if (showMyMessages) {
+      // Client-side search for My Messages
+      if (!searchQuery.trim()) return myMessages;
+      const lowerQuery = searchQuery.toLowerCase();
+      return myMessages.filter(msg =>
+        msg.content.toLowerCase().includes(lowerQuery) ||
+        (msg.signature && msg.signature.toLowerCase().includes(lowerQuery))
+      );
+    }
+    // For public messages, server does filtering, so just return messages
+    return messages;
+  }, [messages, myMessages, showMyMessages, searchQuery]);
 
   // Format date - memoized
   const formatDate = useCallback((dateStr: string) => {

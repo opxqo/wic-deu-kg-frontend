@@ -68,15 +68,24 @@ const createHeaders = (includeAuth: boolean = false): HeadersInit => {
 // API functions
 export const messageApi = {
     // Get messages list (public, but auth optional for liked status)
-    async getMessages(page: number = 1, size: number = 20): Promise<{ data: PageSeniorMessageVO }> {
+    async getMessages(page: number = 1, size: number = 20, keyword?: string): Promise<{ data: PageSeniorMessageVO }> {
         const token = getAuthToken();
         const headers: HeadersInit = {};
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            size: size.toString(),
+        });
+
+        if (keyword && keyword.trim()) {
+            queryParams.append('keyword', keyword.trim());
+        }
+
         const response = await fetch(
-            `${API_BASE}/api/public/messages?page=${page}&size=${size}`,
+            `${API_BASE}/api/public/messages?${queryParams.toString()}`,
             { headers }
         );
 
