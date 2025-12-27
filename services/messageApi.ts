@@ -90,11 +90,13 @@ export const messageApi = {
             { headers }
         );
 
-        if (!response.ok) {
+        const result = await response.json();
+
+        if (!response.ok || result.code !== 0) {
             throw new Error(`Failed to fetch messages: ${response.statusText}`);
         }
 
-        return response.json();
+        return result;
     },
 
     // Get my messages (requires auth)
@@ -104,11 +106,13 @@ export const messageApi = {
             { headers: createHeaders(true) }
         );
 
-        if (!response.ok) {
+        const result = await response.json();
+
+        if (!response.ok || result.code !== 0) {
             throw new Error(`Failed to fetch my messages: ${response.statusText}`);
         }
 
-        return response.json();
+        return result;
     },
 
     // Create new message (requires auth)
@@ -119,12 +123,14 @@ export const messageApi = {
             body: JSON.stringify(data),
         });
 
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
+        const result = await response.json();
+
+        if (!response.ok || result.code !== 0) {
+            const error = result;
             throw new Error(error.message || 'Failed to create message');
         }
 
-        return response.json();
+        return result;
     },
 
     // Toggle like (requires auth)
@@ -134,11 +140,13 @@ export const messageApi = {
             headers: createHeaders(true),
         });
 
-        if (!response.ok) {
+        const result = await response.json();
+
+        if (!response.ok || result.code !== 0) {
             throw new Error('Failed to toggle like');
         }
 
-        return response.json();
+        return result;
     },
 
     // Delete message (requires auth, own message only)
@@ -148,7 +156,9 @@ export const messageApi = {
             headers: createHeaders(true),
         });
 
-        if (!response.ok) {
+        const result = await response.json() as { code: number };
+
+        if (!response.ok || result.code !== 0) {
             throw new Error('Failed to delete message');
         }
     },
@@ -157,11 +167,13 @@ export const messageApi = {
     async getFonts(): Promise<{ data: MessageFont[] }> {
         const response = await fetch(`${API_BASE}/api/public/messages/fonts`);
 
-        if (!response.ok) {
+        const result = await response.json();
+
+        if (!response.ok || result.code !== 0) {
             throw new Error('Failed to fetch fonts');
         }
 
-        return response.json();
+        return result;
     },
 };
 

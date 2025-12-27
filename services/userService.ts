@@ -34,7 +34,7 @@ export const userService = {
 
         const result = await response.json();
 
-        if (!response.ok) {
+        if (!response.ok || result.code !== 0) {
             throw new Error(result.message || '获取用户信息失败');
         }
 

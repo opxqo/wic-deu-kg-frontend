@@ -82,11 +82,13 @@ export const getGalleryImages = async (
     }
   );
 
-  if (!response.ok) {
-    throw new Error('获取图片列表失败');
+  const result = await response.json();
+
+  if (!response.ok || result.code !== 0) {
+    throw new Error(result.message || '获取图片列表失败');
   }
 
-  return response.json();
+  return result;
 };
 
 // 获取图片详情
@@ -98,11 +100,13 @@ export const getGalleryImageDetail = async (
     headers: getAuthHeaders(),
   });
 
-  if (!response.ok) {
-    throw new Error('获取图片详情失败');
+  const result = await response.json();
+
+  if (!response.ok || result.code !== 0) {
+    throw new Error(result.message || '获取图片详情失败');
   }
 
-  return response.json();
+  return result;
 };
 
 // 获取精选图片
@@ -112,11 +116,13 @@ export const getFeaturedImages = async (): Promise<ApiResponse<GalleryImage[]>> 
     headers: getAuthHeaders(),
   });
 
-  if (!response.ok) {
-    throw new Error('获取精选图片失败');
+  const result = await response.json();
+
+  if (!response.ok || result.code !== 0) {
+    throw new Error(result.message || '获取精选图片失败');
   }
 
-  return response.json();
+  return result;
 };
 
 // 获取分类列表
@@ -126,11 +132,13 @@ export const getCategories = async (): Promise<ApiResponse<CategoryInfo[]>> => {
     headers: getAuthHeaders(),
   });
 
-  if (!response.ok) {
-    throw new Error('获取分类列表失败');
+  const result = await response.json();
+
+  if (!response.ok || result.code !== 0) {
+    throw new Error(result.message || '获取分类列表失败');
   }
 
-  return response.json();
+  return result;
 };
 
 // 切换点赞状态
@@ -142,14 +150,17 @@ export const toggleLike = async (
     headers: getAuthHeaders(),
   });
 
-  if (!response.ok) {
+  const result = await response.json();
+
+  if (!response.ok || result.code !== 0) {
+    // ... handling already partial ...
     if (response.status === 401) {
       throw new Error('请先登录后再点赞');
     }
-    throw new Error('点赞操作失败');
+    throw new Error(result.message || '点赞操作失败');
   }
 
-  return response.json();
+  return result;
 };
 
 // 上传图片
@@ -201,15 +212,16 @@ export const uploadImage = async (
     }
   );
 
-  if (!response.ok) {
+  const result = await response.json();
+
+  if (!response.ok || result.code !== 0) {
     if (response.status === 401) {
       throw new Error('请先登录后再上传');
     }
-    const errorData = await response.json().catch(() => null);
-    throw new Error(errorData?.message || '上传失败');
+    throw new Error(result.message || '上传失败');
   }
 
-  return response.json();
+  return result;
 };
 
 // 获取我的图片
@@ -229,14 +241,16 @@ export const getMyImages = async (
     }
   );
 
-  if (!response.ok) {
+  const result = await response.json();
+
+  if (!response.ok || result.code !== 0) {
     if (response.status === 401) {
       throw new Error('请先登录');
     }
-    throw new Error('获取我的图片失败');
+    throw new Error(result.message || '获取我的图片失败');
   }
 
-  return response.json();
+  return result;
 };
 
 // 删除我的图片
@@ -248,17 +262,19 @@ export const deleteMyImage = async (
     headers: getAuthHeaders(),
   });
 
-  if (!response.ok) {
+  const result = await response.json();
+
+  if (!response.ok || result.code !== 0) {
     if (response.status === 401) {
       throw new Error('请先登录');
     }
     if (response.status === 403) {
       throw new Error('无权删除此图片');
     }
-    throw new Error('删除失败');
+    throw new Error(result.message || '删除失败');
   }
 
-  return response.json();
+  return result;
 };
 
 export default {

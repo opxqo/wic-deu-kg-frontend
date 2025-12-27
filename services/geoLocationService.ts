@@ -230,7 +230,7 @@ class GeoLocationService {
     const response = await fetch(`${API_BASE_URL}/api/geo/config`);
     const result = await response.json();
 
-    if (result.code === 200) {
+    if (result.code === 0) {
       this.geoConfig = result.data;
       this.saveToStorage();
       return result.data;
@@ -260,7 +260,7 @@ class GeoLocationService {
 
     const result = await response.json();
 
-    if (result.code === 200) {
+    if (result.code === 0) {
       this.checkResult = result.data;
       this.saveToStorage();
       this.notifyCheckResultChange(result.data);

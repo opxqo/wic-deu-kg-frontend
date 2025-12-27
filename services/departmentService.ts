@@ -50,7 +50,7 @@ const departmentService = {
 
     const result = await response.json();
 
-    if (!response.ok || result.code !== 200) {
+    if (!response.ok || result.code !== 0) {
       throw new Error(result.message || '获取学部列表失败');
     }
 
@@ -72,7 +72,7 @@ const departmentService = {
 
     const result = await response.json();
 
-    if (!response.ok || result.code !== 200) {
+    if (!response.ok || result.code !== 0) {
       throw new Error(result.message || '获取学部详情失败');
     }
 

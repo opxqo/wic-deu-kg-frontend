@@ -71,7 +71,7 @@ export const authService = {
     const result = await response.json();
 
     // 处理不同的响应状态码
-    if (!response.ok) {
+    if (!response.ok || result.code !== 0) {
       // 401: 学号或密码错误
       // 403: 账号未激活或已被禁用
       throw new Error(result.message || '登录失败');
@@ -169,7 +169,7 @@ export const authService = {
 
     const result = await response.json();
 
-    if (!response.ok) {
+    if (!response.ok || result.code !== 0) {
       // 400: 学号/用户名/邮箱已被使用
       throw new Error(result.message || '注册失败');
     }
@@ -193,7 +193,7 @@ export const authService = {
 
     const result = await response.json();
 
-    if (!response.ok) {
+    if (!response.ok || result.code !== 0) {
       throw new Error(result.message || '激活失败');
     }
 
@@ -214,7 +214,7 @@ export const authService = {
 
     const result = await response.json();
 
-    if (!response.ok) {
+    if (!response.ok || result.code !== 0) {
       throw new Error(result.message || '发送失败');
     }
 
@@ -250,7 +250,7 @@ export const authService = {
 
     const result = await response.json();
 
-    if (!response.ok || result.code !== 200) {
+    if (!response.ok || result.code !== 0) {
       throw new Error(result.message || '更新失败');
     }
 
@@ -286,7 +286,7 @@ export const authService = {
 
     const result = await response.json();
 
-    if (!response.ok || result.code !== 200) {
+    if (!response.ok || result.code !== 0) {
       throw new Error(result.message || '上传失败');
     }
 
