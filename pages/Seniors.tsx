@@ -449,10 +449,10 @@ const Seniors: React.FC = () => {
         </aside>
 
         {/* Right Content Area */}
-        <main className="flex-1 overflow-auto">
-          <div className="p-6 pb-32 max-w-6xl mx-auto">
-            {/* Search Box - Modern Floating Style */}
-            <div className="flex justify-center mb-8">
+        <main className="flex-1 overflow-auto flex flex-col">
+          <div className="px-6 py-32 max-w-6xl mx-auto my-auto w-full">
+            {/* Search Box for Mobile/Tablet (Hidden on Desktop) */}
+            <div className="flex justify-center mb-8 xl:hidden">
               <div className="relative w-full max-w-xl">
                 <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
                 <Input
@@ -460,7 +460,7 @@ const Seniors: React.FC = () => {
                   placeholder="搜索留言内容或署名..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 h-12 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-700 dark:text-zinc-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] focus:shadow-[0_4px_25px_-4px_rgba(251,191,36,0.25)] focus:border-amber-300 dark:focus:border-amber-500 transition-all duration-200"
+                  className="w-full pl-12 pr-4 h-12 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-700 dark:text-zinc-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 shadow-sm"
                 />
               </div>
             </div>
@@ -656,6 +656,46 @@ const Seniors: React.FC = () => {
             </AlertDialogContent>
           </AlertDialog>
         </main>
+
+        {/* Right Sidebar - For Search & Extras */}
+        <aside className="w-80 flex-shrink-0 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border-l border-zinc-200 dark:border-amber-500/10 hidden xl:block p-6">
+          <div className="sticky top-6 space-y-8">
+            {/* Search Box */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">搜索</label>
+              <div className="relative group">
+                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-amber-500 transition-colors" />
+                <Input
+                  type="text"
+                  placeholder="查找留言..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 h-10 bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 rounded-lg shadow-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Decorative Content */}
+            <div className="space-y-4">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-100 dark:border-amber-900/30">
+                <h3 className="font-semibold text-amber-800 dark:text-amber-200 mb-2 flex items-center gap-2">
+                  <Sparkles size={16} />
+                  温馨提示
+                </h3>
+                <p className="text-sm text-amber-700/80 dark:text-amber-300/70 leading-relaxed">
+                  每条留言都是一份温暖的传递。请文明留言，分享正面积极的内容。
+                </p>
+              </div>
+
+              <div className="flex justify-between items-center px-2 opacity-50">
+                <BookOpen size={24} className="text-zinc-300 dark:text-zinc-700" />
+                <GraduationCap size={24} className="text-zinc-300 dark:text-zinc-700" />
+                <Leaf size={24} className="text-zinc-300 dark:text-zinc-700" />
+              </div>
+            </div>
+          </div>
+        </aside>
+
       </div >
     </div >
   );
