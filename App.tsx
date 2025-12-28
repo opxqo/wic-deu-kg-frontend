@@ -14,6 +14,9 @@ import Gallery from './pages/Gallery';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import UserProfile from './pages/UserProfile';
+import AdminRoute from './components/AdminRoute';
+import AdminLayout from './pages/Admin/AdminLayout';
+import Dashboard from './pages/Admin/Dashboard';
 import { AnimatePresence } from 'framer-motion';
 import { LanguageProvider } from './LanguageContext';
 import { ThemeProvider, useTheme } from './ThemeContext';
@@ -33,16 +36,17 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const isChatPage = location.pathname === '/chat';
   const isSeniorsPage = location.pathname === '/seniors';
+  const isAdminPage = location.pathname.startsWith('/admin');
   const { theme } = useTheme();
 
   return (
     <div className="min-h-screen flex flex-col bg-wic-bg dark:bg-slate-950 text-wic-text dark:text-gray-100 font-sans selection:bg-wic-primary selection:text-white transition-colors duration-300 relative">
       {theme === 'dark' && <MeteorEffect />}
-      <Navbar />
-      <main className={`flex-grow ${isChatPage ? '' : 'pt-16'} ${isChatPage ? 'h-screen overflow-hidden' : ''} relative z-10`}>
+      {!isAdminPage && <Navbar />}
+      <main className={`flex-grow ${(isChatPage || isAdminPage) ? '' : 'pt-16'} ${(isChatPage || isAdminPage) ? 'h-screen overflow-hidden' : ''} relative z-10`}>
         {children}
       </main>
-      {(!isChatPage && !isSeniorsPage) && <Footer />}
+      {(!isChatPage && !isSeniorsPage && !isAdminPage) && <Footer />}
     </div>
   );
 };
@@ -78,6 +82,15 @@ const AppContent: React.FC = () => {
                   <Route path="/login" element={<Login />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/user/:id" element={<UserProfile />} />
+
+                  {/* Admin Routes */}
+                  <Route path="/admin" element={<AdminRoute />}>
+                    <Route element={<AdminLayout />}>
+                      <Route index element={<Dashboard />} />
+                      {/* Add more admin sub-routes here like: */}
+                      {/* <Route path="users" element={<UserManagement />} /> */}
+                    </Route>
+                  </Route>
                 </Routes>
               </AnimatePresence>
             </Layout>

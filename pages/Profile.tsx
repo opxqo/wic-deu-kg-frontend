@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 import {
@@ -221,7 +222,14 @@ const Profile: React.FC = () => {
                     )}
                   </div>
 
-                  <h1 className="text-2xl font-bold text-foreground mb-1">{user.name}</h1>
+                  <div className="flex flex-col items-center justify-center mb-1 gap-2">
+                    <h1 className="text-2xl font-bold text-foreground">{user.name}</h1>
+                    {user.roleName && (
+                      <Badge variant={user.role === 1 ? "default" : user.role === 2 ? "secondary" : "outline"}>
+                        {user.roleName}
+                      </Badge>
+                    )}
+                  </div>
                   <p className="text-muted-foreground text-sm mb-6">{user.id}</p>
 
                   <div className="grid grid-cols-3 gap-2 border-t pt-6 bg-muted/20 -mx-6 -mb-8 pb-6">

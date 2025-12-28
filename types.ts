@@ -87,4 +87,6 @@ export interface UserProfile {
   bio: string;
   avatar: string;
   joinDate: string;
+  role?: number;
+  roleName?: string;
 }

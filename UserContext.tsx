@@ -31,6 +31,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         bio: savedUser.bio,
         avatar: savedUser.avatar,
         joinDate: savedUser.createdAt,
+        role: savedUser.role,
+        roleName: savedUser.roleName,
       } as UserProfile);
 
       // 2. 异步获取最新用户信息 (GET /api/users/me)
@@ -46,6 +48,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             bio: freshUser.bio,
             avatar: freshUser.avatar,
             joinDate: freshUser.createdAt,
+            role: freshUser.role,
+            roleName: freshUser.roleName,
           } as UserProfile);
         }
       }).catch(console.error);
