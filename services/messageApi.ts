@@ -70,6 +70,15 @@ export const messageApi = {
         return apiClient.get<PageSeniorMessageVO>(`/api/users/me/messages?${params.toString()}`);
     },
 
+    // Get user messages (public/admin depending on use case, but here likely public for testing)
+    // Endpoint: GET /api/messages/user/{studentId}
+    async getUserMessages(studentId: string, page: number = 1, size: number = 20): Promise<ApiResult<PageSeniorMessageVO>> {
+        const params = new URLSearchParams();
+        params.append('page', page.toString());
+        params.append('size', size.toString());
+        return apiClient.get<PageSeniorMessageVO>(`/api/messages/user/${studentId}?${params.toString()}`);
+    },
+
     // Create new message (auth)
     // V3: POST /api/messages
     async createMessage(data: CreateMessageRequest): Promise<ApiResult<SeniorMessageVO>> {

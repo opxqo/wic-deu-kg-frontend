@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, User, GraduationCap, Calendar, MessageSquare, Heart, MapPin, School, BookOpen, Mail } from 'lucide-react';
 import { userService, UserCardVO } from '../services/userService';
+import { messageApi, SeniorMessageVO } from '../services/messageApi';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -16,6 +17,7 @@ const UserProfile: React.FC = () => {
     const [user, setUser] = useState<UserCardVO | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [messages, setMessages] = useState<SeniorMessageVO[]>([]);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -23,27 +25,29 @@ const UserProfile: React.FC = () => {
             try {
                 setLoading(true);
                 const response = await userService.getUserCard(id);
+
+                let userData: UserCardVO | null = null;
                 if ((response.code === 0 || response.code === 200) && response.data) {
-                    setUser(response.data);
+                    userData = response.data;
+                    setUser(userData);
                 } else {
                     setError(response.message || '获取用户信息失败');
                 }
+
+                if (userData && userData.studentId) {
+                    try {
+                        const messagesResponse = await messageApi.getUserMessages(userData.studentId);
+                        if ((messagesResponse.code === 0 || messagesResponse.code === 200) && messagesResponse.data) {
+                            setMessages(messagesResponse.data.records);
+                        }
+                    } catch (msgErr) {
+                        console.error("Failed to fetch messages:", msgErr);
+                        // 留言获取失败不影响主页面显示
+                    }
+                }
+
             } catch (err: any) {
                 setError(err.message || '获取用户信息失败');
-                // Mock data for development if API fails
-                // setUser({
-                //   userId: parseInt(id),
-                //   studentId: '20210001',
-                //   username: '测试用户',
-                //   name: '张三',
-                //   avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`,
-                //   department: '计算机工程学院',
-                //   major: '软件工程',
-                //   bio: '热爱编程，热爱生活。追逐光影的少年。',
-                //   joinDate: '2023-09-01',
-                //   messageCount: 42,
-                //   likeCount: 128
-                // });
             } finally {
                 setLoading(false);
             }
@@ -96,11 +100,95 @@ const UserProfile: React.FC = () => {
     if (!user) return null;
 
     return (
-        <div className="min-h-screen pt-20 pb-12 px-4 bg-background dark:bg-slate-950 transition-colors duration-300">
+        <div className="min-h-screen pt-20 pb-12 px-4 bg-background dark:bg-slate-950 transition-colors duration-300 relative overflow-hidden">
+            {/* 留言墙展示区域 - 背景层 */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <AnimatePresence>
+                    {messages.map((msg, index) => {
+                        // 使用 index 决定左右，确保均匀的一左一右
+                        // 0: 左, 1: 右, 2: 左, 3: 右 ...
+                        const isLeft = index % 2 === 0;
+
+                        // 使用 msg.id 作为随机种子，保证外观一致性
+                        const seed = msg.id;
+
+                        // 简单的伪随机函数
+                        const pseudoRandom = (input: number) => {
+                            const x = Math.sin(input) * 10000;
+                            return x - Math.floor(x);
+                        };
+
+                        // 计算该侧的索引
+                        const sideIndex = Math.floor(index / 2);
+                        // 估算该侧总数 (向上取整)
+                        const totalInSide = Math.ceil(messages.length / 2);
+
+                        // 在垂直方向均匀分布
+                        // 将屏幕垂直分为 totalInSide 个区块，每个便签在自己的区块内随机浮动
+                        // 区块高度百分比
+                        const sliceHeight = 90 / totalInSide;
+                        // 基础 Top: 顶部预留 5%
+                        const baseTop = 5 + sideIndex * sliceHeight;
+
+                        // 在区块内随机偏移，但保持在区块内 (比如说偏移 10% - 90% 的 sliceHeight)
+                        // 加上一点随机性
+                        const randomOffsetInSlice = pseudoRandom(seed) * (sliceHeight * 0.6);
+
+                        const finalTop = baseTop + (sliceHeight * 0.2) + randomOffsetInSlice;
+
+                        // 距离边缘的距离. 既然要均匀分布背景，可以稍微放宽范围
+                        // 但不能挡住中间卡片。中间卡片大概占 40-50%
+                        // 所以两边可以占 0-25% 左右
+                        // 左侧: 2% - 25%
+                        // 右侧: 也是距离右边缘 2% - 25%
+                        const randomEdge = 2 + Math.floor(pseudoRandom(seed + 1) * 23);
+
+                        const randomRotate = -6 + Math.floor(pseudoRandom(seed + 2) * 12); // -6deg - 6deg
+
+                        // 颜色
+                        const colors = ['bg-yellow-100', 'bg-blue-100', 'bg-pink-100', 'bg-green-100'];
+                        const colorIndex = Math.floor(pseudoRandom(seed + 3) * colors.length);
+                        const bgColor = colors[colorIndex];
+
+                        // 限制显示数量，防止过多
+                        if (index > 15) return null;
+
+                        return (
+                            <motion.div
+                                key={msg.id}
+                                initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                transition={{ delay: index * 0.1, duration: 0.5, type: 'spring' }}
+                                style={{
+                                    top: `${finalTop}%`,
+                                    left: isLeft ? `${randomEdge}%` : 'auto',
+                                    right: !isLeft ? `${randomEdge}%` : 'auto',
+                                    transform: `rotate(${randomRotate}deg)`,
+                                }}
+                                className={`absolute pointer-events-auto w-40 md:w-56 p-4 shadow-lg rounded-sm cursor-pointer hover:z-20 hover:scale-110 transition-transform duration-200 ${bgColor} dark:opacity-80`}
+                                title={`By: ${msg.signature || '匿名'}\nTime: ${new Date(msg.createdAt).toLocaleDateString()}`}
+                            >
+                                {/* 模拟胶带效果 (可选) */}
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-8 h-4 bg-white/30 rotate-1 transform"></div>
+
+                                <p className="text-sm text-gray-800 dark:text-gray-900 font-handwriting line-clamp-4 leading-normal select-none break-words">
+                                    {msg.content}
+                                </p>
+                                <div className="mt-2 text-right">
+                                    <span className="text-xs text-gray-500 dark:text-gray-700 font-handwriting">
+                                        — {msg.signature || 'Anonymous'}
+                                    </span>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
+                </AnimatePresence>
+            </div>
+
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="max-w-3xl mx-auto"
+                className="max-w-3xl mx-auto relative z-10"
             >
                 <Button
                     variant="ghost"
@@ -113,10 +201,10 @@ const UserProfile: React.FC = () => {
 
                 <Card className="overflow-hidden border-border/50 shadow-xl bg-card dark:bg-gray-900">
                     {/* Banner 背景区域 */}
-                    <div className="h-48 relative overflow-hidden bg-gradient-to-r from-wic-primary/20 to-wic-accent/20 dark:from-wic-primary/10 dark:to-wic-accent/10">
+                    <div className="h-32 md:h-48 relative overflow-hidden bg-gradient-to-r from-green-100 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/10">
                         {/* 装饰性背景圆 */}
-                        <div className="absolute top-[-50%] left-[-10%] w-[500px] h-[500px] rounded-full bg-wic-primary/5 blur-3xl" />
-                        <div className="absolute bottom-[-50%] right-[-10%] w-[400px] h-[400px] rounded-full bg-wic-accent/5 blur-3xl" />
+                        <div className="absolute top-[-50%] left-[-10%] w-[500px] h-[500px] rounded-full bg-green-200/30 dark:bg-green-500/10 blur-3xl pointer-events-none" />
+                        <div className="absolute bottom-[-50%] right-[-10%] w-[400px] h-[400px] rounded-full bg-emerald-200/30 dark:bg-emerald-500/10 blur-3xl pointer-events-none" />
                     </div>
 
                     <CardContent className="relative px-6 sm:px-10 pb-10">
@@ -237,5 +325,4 @@ const UserProfile: React.FC = () => {
         </div>
     );
 };
-
 export default UserProfile;

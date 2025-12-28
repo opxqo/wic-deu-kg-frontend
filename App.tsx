@@ -14,6 +14,7 @@ import Gallery from './pages/Gallery';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import UserProfile from './pages/UserProfile';
+import MessageTest from './pages/MessageTest';
 import AdminRoute from './components/AdminRoute';
 import AdminLayout from './pages/Admin/AdminLayout';
 import Dashboard from './pages/Admin/Dashboard';
@@ -86,6 +87,7 @@ const AppContent: React.FC = () => {
                   <Route path="/login" element={<Login />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/user/:id" element={<UserProfile />} />
+                  <Route path="/test/messages" element={<MessageTest />} />
 
                   {/* Admin Routes */}
                   <Route path="/admin" element={<AdminRoute />}>
