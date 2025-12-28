@@ -17,12 +17,16 @@ import UserProfile from './pages/UserProfile';
 import AdminRoute from './components/AdminRoute';
 import AdminLayout from './pages/Admin/AdminLayout';
 import Dashboard from './pages/Admin/Dashboard';
+import UserManagement from './pages/Admin/UserManagement';
+import DepartmentManagement from './pages/Admin/DepartmentManagement';
+import MessageManagement from './pages/Admin/MessageManagement';
 import { AnimatePresence } from 'framer-motion';
 import { LanguageProvider } from './LanguageContext';
 import { ThemeProvider, useTheme } from './ThemeContext';
 import { UserProvider } from './UserContext';
 import { MobileMenuProvider } from './context/MobileMenuContext';
 import MeteorEffect from './components/MeteorEffect';
+import { Toaster } from "@/components/ui/toaster";
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -87,8 +91,9 @@ const AppContent: React.FC = () => {
                   <Route path="/admin" element={<AdminRoute />}>
                     <Route element={<AdminLayout />}>
                       <Route index element={<Dashboard />} />
-                      {/* Add more admin sub-routes here like: */}
-                      {/* <Route path="users" element={<UserManagement />} /> */}
+                      <Route path="users" element={<UserManagement />} />
+                      <Route path="departments" element={<DepartmentManagement />} />
+                      <Route path="messages" element={<MessageManagement />} />
                     </Route>
                   </Route>
                 </Routes>
@@ -105,6 +110,7 @@ const App: React.FC = () => {
   return (
     <ThemeProvider>
       <AppContent />
+      <Toaster />
     </ThemeProvider>
   );
 };

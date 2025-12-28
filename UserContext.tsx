@@ -15,14 +15,10 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-
-  // 页面加载时从 localStorage 恢复登录状态，并获取最新用户信息
-  useEffect(() => {
+  const [user, setUser] = useState<UserProfile | null>(() => {
     const savedUser = authService.getUser();
     if (savedUser && authService.isAuthenticated()) {
-      // 1. 先用本地缓存快速渲染
-      setUser({
+      return {
         name: savedUser.name,
         id: savedUser.studentId,
         email: savedUser.email,
@@ -33,9 +29,15 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         joinDate: savedUser.createdAt,
         role: savedUser.role,
         roleName: savedUser.roleName,
-      } as UserProfile);
+      } as UserProfile;
+    }
+    return null;
+  });
 
-      // 2. 异步获取最新用户信息 (GET /api/users/me)
+  // 页面加载时获取最新用户信息
+  useEffect(() => {
+    if (user) {
+      // 异步获取最新用户信息 (GET /api/users/me)
       authService.fetchCurrentUser().then(result => {
         if ((result.code === 0 || result.code === 200) && result.data) {
           const freshUser = result.data;

@@ -8,7 +8,9 @@ import {
     Bell,
     Home,
     Sun,
-    Moon
+    Moon,
+    School,
+    MessageSquare
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -39,6 +41,8 @@ const AdminLayout: React.FC = () => {
     const menuItems = [
         { icon: LayoutDashboard, label: '概览', path: '/admin' },
         { icon: Users, label: '用户管理', path: '/admin/users' },
+        { icon: School, label: '学部管理', path: '/admin/departments' },
+        { icon: MessageSquare, label: '留言管理', path: '/admin/messages' },
         { icon: Settings, label: '系统设置', path: '/admin/settings' },
     ];
 

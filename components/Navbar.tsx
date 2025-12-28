@@ -1,6 +1,6 @@
 import React, { memo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Globe, User, Moon, Sun, Home, School, MessageCircle, Utensils, Library, Gamepad2 } from 'lucide-react';
+import { Menu, X, Globe, User, Moon, Sun, Home, School, MessageCircle, Utensils, Library, Gamepad2, LayoutDashboard } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion';
 import { cn } from "@/lib/utils"
 import { ExpandingNavbar } from './ExpandingNavbar';
@@ -302,6 +302,13 @@ const Navbar: React.FC = () => {
 
                     {/* User / Action (Desktop) */}
                     <div className="hidden md:flex items-center gap-4">
+                        {/* Admin Dashboard Link - Visible to Organizers (1) and Admins (2) */}
+                        {isAuthenticated && user && (user.role === 1 || user.role === 2) && (
+                            <Link to="/admin" className={iconBtnClass} title="管理面板">
+                                <LayoutDashboard size={20} />
+                            </Link>
+                        )}
+
                         <button onClick={toggleTheme} className={iconBtnClass}>
                             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
                         </button>
