@@ -201,11 +201,11 @@ const UserProfile: React.FC = () => {
 
                 <Card className="overflow-hidden border-border/50 shadow-xl bg-card dark:bg-gray-900">
                     {/* Banner 背景区域 */}
-                    <div className="h-32 md:h-48 relative overflow-hidden bg-gradient-to-r from-green-100 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/10">
-                        {/* 装饰性背景圆 */}
-                        <div className="absolute top-[-50%] left-[-10%] w-[500px] h-[500px] rounded-full bg-green-200/30 dark:bg-green-500/10 blur-3xl pointer-events-none" />
-                        <div className="absolute bottom-[-50%] right-[-10%] w-[400px] h-[400px] rounded-full bg-emerald-200/30 dark:bg-emerald-500/10 blur-3xl pointer-events-none" />
-                    </div>
+                    {/* Banner 背景区域 */}
+                    <div
+                        className="h-32 md:h-48 relative overflow-hidden bg-cover bg-center"
+                        style={{ backgroundImage: 'url("https://api.imlcd.cn/bg/gq.php")' }}
+                    />
 
                     <CardContent className="relative px-6 sm:px-10 pb-10">
                         {/* 头像 */}
