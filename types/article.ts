@@ -22,14 +22,14 @@ export interface Article {
 }
 
 export interface ArticleResponse {
-    code: number; // 0 for success
-    msg: string;
+    code?: number; // 0 for success
+    msg?: string;
     data: Article;
 }
 
 export interface PageArticleResponse {
-    code: number;
-    msg: string;
+    code?: number;
+    msg?: string;
     data: {
         records: Article[];
         total: number;

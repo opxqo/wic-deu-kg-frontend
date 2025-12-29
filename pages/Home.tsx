@@ -209,7 +209,11 @@ const Home: React.FC = () => {
     const fetchArticles = async () => {
       try {
         const response = await articleService.getArticles(1, 6); // Fetch 6 items for carousel
-        if (response.code === 0 && response.data && response.data.records) {
+        // Relaxed check: Accept response if data.records exists, even if code is missing/undefined/200
+        if (response.data && response.data.records) {
+          setArticles(response.data.records);
+        } else if (response.code === 0 && response.data && response.data.records) {
+          // Fallback to strict check just in case
           setArticles(response.data.records);
         }
       } catch (error) {

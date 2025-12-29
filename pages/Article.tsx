@@ -21,7 +21,10 @@ const Article: React.FC = () => {
                 // provided by the service or handled here if API fails.
                 // For now, we assume strict API integration as requested.
                 const response = await articleService.getArticleById(id);
-                if (response.code === 0 && response.data) {
+                // Backend may return data directly without code field
+                if ((response as any).data) { // Type assertion to bypass strict check if types aren't fully updated or just check for data existence
+                    setArticle(response.data);
+                } else if (response.code === 0 && response.data) {
                     setArticle(response.data);
                 } else {
                     setError(response.msg || "Failed to load article");
