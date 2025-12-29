@@ -46,7 +46,7 @@ const StatItem: React.FC<StatItemProps> = ({
       {/* 数值 */}
       <div className="text-3xl md:text-4xl lg:text-[2.75rem] font-bold text-wic-accent mb-1.5 font-mono tabular-nums leading-none">
         {displayValue}
-        <span className="text-base md:text-lg lg:text-xl font-medium">{suffix}</span>
+        <span className="text-base md:text-lg lg:text-xl font-medium whitespace-nowrap">{suffix}</span>
       </div>
 
       {/* 标签 */}
@@ -111,8 +111,8 @@ const StatsSection: React.FC = () => {
     },
     {
       label: language === 'zh' ? '教学设备' : 'Equipment',
-      value: 12732.01,
-      suffix: '万元',
+      value: 1.27,
+      suffix: language === 'zh' ? '亿元' : 'Million',
       decimals: 2,
       icon: <IconEquipment />,
     },
