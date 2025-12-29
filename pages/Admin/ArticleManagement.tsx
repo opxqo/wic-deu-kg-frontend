@@ -26,6 +26,7 @@ import { articleService } from "@/services/articleService";
 import { Article } from "@/types/article";
 import { Loader2, Plus, Pencil, Trash2, Search } from "lucide-react";
 
+
 export default function ArticleManagement() {
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(true);

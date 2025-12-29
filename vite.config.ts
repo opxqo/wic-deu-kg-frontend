@@ -25,6 +25,24 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       }
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-core': ['react', 'react-dom', 'react-router-dom', 'framer-motion'],
+            'vendor-ui': [
+              '@radix-ui/react-slot',
+              '@radix-ui/react-popover',
+              '@radix-ui/react-dialog',
+              'lucide-react',
+              'class-variance-authority',
+              'clsx',
+              'tailwind-merge'
+            ]
+          }
+        }
+      }
     }
   };
 });
