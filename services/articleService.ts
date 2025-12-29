@@ -43,12 +43,13 @@ export const articleService = {
      * Create a new article
      */
     createArticle: async (data: Partial<Article>): Promise<ArticleResponse> => {
+        const token = localStorage.getItem('token');
         try {
             const response = await fetch(`${API_BASE_URL}/article`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // 'Authorization': `Bearer ${token}` // Assuming auth token is handled by interceptor or cookie
+                    'Authorization': token ? token.startsWith('Bearer ') ? token : `Bearer ${token}` : ''
                 },
                 body: JSON.stringify(data)
             });
@@ -67,11 +68,13 @@ export const articleService = {
      */
     updateArticle: async (data: Partial<Article>): Promise<ArticleResponse> => {
         if (!data.id) throw new Error("Article ID is required for update");
+        const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`${API_BASE_URL}/article`, { // Assuming PUT /api/article for update based on standard REST or common patterns
+            const response = await fetch(`${API_BASE_URL}/article`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': token ? token.startsWith('Bearer ') ? token : `Bearer ${token}` : ''
                 },
                 body: JSON.stringify(data)
             });
@@ -89,14 +92,18 @@ export const articleService = {
      * Delete an article
      */
     deleteArticle: async (id: string | number): Promise<any> => {
+        const token = localStorage.getItem('token');
         try {
             const response = await fetch(`${API_BASE_URL}/article/${id}`, {
                 method: 'DELETE',
+                headers: {
+                    'Authorization': token ? token.startsWith('Bearer ') ? token : `Bearer ${token}` : ''
+                }
             });
             if (!response.ok) {
                 throw new Error(`Error deleting article: ${response.statusText}`);
             }
-            return await response.json(); // Assuming returns standard response envelope
+            return await response.json();
         } catch (error) {
             console.error("Failed to delete article:", error);
             throw error;

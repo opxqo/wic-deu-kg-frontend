@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import {
   Heart, Phone, MapPin, Mail, ChevronDown,
   Github, MessageCircle, Globe, ExternalLink,
-  BookOpen, Calendar, Map as MapIcon, Users
+  BookOpen, Calendar, Map as MapIcon, Users, MessageSquareQuote
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -282,7 +282,7 @@ const Footer: React.FC = () => {
           {/* Column 3: Campus Life (New) */}
           <FooterSection title="Campus Life">
             <FooterLink href="/library" icon={<BookOpen size={14} />}>{t('nav.library')}</FooterLink>
-            <FooterLink href="/about#section-3" icon={<MapIcon size={14} />}>Campus Map</FooterLink>
+            <FooterLink href="/seniors" icon={<MessageSquareQuote size={14} />}>Message Wall</FooterLink>
             <FooterLink href="/gallery" icon={<Users size={14} />}>Student Clubs</FooterLink>
             <FooterLink href="#" icon={<Calendar size={14} />}>Academic Calendar</FooterLink>
           </FooterSection>
