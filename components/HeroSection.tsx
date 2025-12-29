@@ -197,13 +197,14 @@ const HeroSection: React.FC = () => {
         onClick={() => setShowScrollbar(!showScrollbar)}
         title={showScrollbar ? "Hide Scrollbar" : "Show Scrollbar"}
       >
-        <div className="flex flex-col items-center gap-2 animate-float-slow transition-transform hover:scale-110 active:scale-95">
+        <div className="flex flex-col items-center gap-0 animate-float-slow transition-transform hover:scale-110 active:scale-95">
           {/* Mouse Outer Body */}
-          <div className={`w-[24px] h-[40px] rounded-[14px] border-[2px] relative shadow-[inset_0_0_6px_rgba(0,0,0,0.2),0_2px_10px_rgba(0,0,0,0.3)] backdrop-blur-sm transition-colors duration-300 ${showScrollbar ? 'border-wic-primary bg-white/20' : 'border-white/90'}`}>
-            {/* Scroll Wheel - Changes color to indicate active state */}
-            <div className={`absolute left-1/2 -translate-x-1/2 top-[6px] w-[6px] h-[10px] rounded-[4px] shadow-[0_1px_3px_rgba(0,0,0,0.3)] transition-colors duration-300 ${showScrollbar ? 'bg-wic-primary' : 'bg-white'}`}></div>
-          </div>
-          <span className="text-white text-[12px] tracking-[3px] uppercase font-semibold opacity-90 text-shadow-sm font-sans">
+          <img
+            src="/BxsMouseAlt.svg"
+            alt="Scroll Toggle"
+            className={`w-[30px] drop-shadow-md transition-all duration-300 ${showScrollbar ? 'opacity-100 scale-110' : 'opacity-80'}`}
+          />
+          <span className="text-white text-[12px] tracking-[3px] uppercase font-semibold opacity-90 text-shadow-sm font-sans pl-[3px]">
             {showScrollbar ? 'ON' : 'OFF'}
           </span>
         </div>
