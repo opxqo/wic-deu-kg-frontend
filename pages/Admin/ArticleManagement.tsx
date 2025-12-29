@@ -1,5 +1,5 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import RichTextEditor from "@/components/RichTextEditor";
 import {
     Table,
     TableBody,
@@ -8,6 +8,16 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
     Dialog,
     DialogContent,
@@ -40,6 +50,10 @@ export default function ArticleManagement() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentArticle, setCurrentArticle] = useState<Partial<Article>>({});
+
+    // Delete Alert State
+    const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
 
     const fetchArticles = async () => {
         setLoading(true);
@@ -94,14 +108,22 @@ export default function ArticleManagement() {
         setIsDialogOpen(true);
     };
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm("Are you sure you want to delete this article?")) return;
+    const handleDelete = (id: string) => {
+        setDeleteId(id);
+        setIsDeleteAlertOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
         try {
-            await articleService.deleteArticle(id);
+            await articleService.deleteArticle(deleteId);
             toast({ title: "Success", description: "Article deleted successfully" });
             fetchArticles();
         } catch (error) {
             toast({ title: "Error", description: "Failed to delete article", variant: "destructive" });
+        } finally {
+            setIsDeleteAlertOpen(false);
+            setDeleteId(null);
         }
     };
 
@@ -159,6 +181,7 @@ export default function ArticleManagement() {
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead className="w-[80px]">封面</TableHead>
                             <TableHead>标题</TableHead>
                             <TableHead>作者</TableHead>
                             <TableHead>发布日期</TableHead>
@@ -182,7 +205,16 @@ export default function ArticleManagement() {
                         ) : (
                             articles.map((article) => (
                                 <TableRow key={article.id}>
-                                    <TableCell className="font-medium max-w-[200px] truncate" title={article.title}>{article.title}</TableCell>
+                                    <TableCell>
+                                        <div className="w-16 h-10 rounded overflow-hidden bg-muted relative">
+                                            {article.coverImage ? (
+                                                <img src={article.coverImage} alt="cover" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">无图</div>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="font-medium min-w-[200px]">{article.title}</TableCell>
                                     <TableCell>{article.author}</TableCell>
                                     <TableCell>{article.publishDate || article.createdAt}</TableCell>
                                     <TableCell>
@@ -295,12 +327,10 @@ export default function ArticleManagement() {
 
                         <div className="grid gap-2">
                             <Label htmlFor="content">内容 (HTML) *</Label>
-                            <Textarea
-                                id="content"
-                                className="min-h-[200px] font-mono text-sm"
-                                placeholder="<p>文章内容...</p>"
+                            <RichTextEditor
                                 value={currentArticle.content || ''}
-                                onChange={(e) => setCurrentArticle({ ...currentArticle, content: e.target.value })}
+                                onChange={(value) => setCurrentArticle({ ...currentArticle, content: value })}
+                                placeholder="编写文章内容..."
                             />
                         </div>
                     </div>
@@ -310,6 +340,23 @@ export default function ArticleManagement() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>确认删除?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            此操作不可撤销。这将永久删除该文章。
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>取消</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-600">
+                            确认删除
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
