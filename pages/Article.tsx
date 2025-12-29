@@ -87,11 +87,15 @@ const Article: React.FC = () => {
 
                     {article.tags && article.tags.length > 0 && (
                         <div className="flex gap-2 mb-6">
-                            {article.tags.map(tag => (
-                                <span key={tag} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-blue-500/20 text-blue-100 border-blue-400/30 backdrop-blur-sm">
-                                    {tag}
-                                </span>
-                            ))}
+                            {article.tags.map(tag => {
+                                const cleanTag = tag.replace(/[\[\]"]/g, '').trim();
+                                if (!cleanTag) return null;
+                                return (
+                                    <span key={tag} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-blue-500/20 text-blue-100 border-blue-400/30 backdrop-blur-sm">
+                                        {cleanTag}
+                                    </span>
+                                );
+                            })}
                         </div>
                     )}
 

@@ -346,8 +346,16 @@ const Home: React.FC = () => {
                               }}
                             />
                             {article.tags && article.tags.length > 0 && (
-                              <div className="absolute top-4 left-4 bg-wic-primary text-white text-xs font-bold px-2 py-1 rounded shadow-md">
-                                {article.tags[0]}
+                              <div className="absolute top-4 left-4 flex gap-1 flex-wrap max-w-[80%]">
+                                {article.tags.map((tag, idx) => {
+                                  const cleanTag = tag.replace(/[\[\]"]/g, '').trim();
+                                  if (!cleanTag) return null;
+                                  return (
+                                    <div key={idx} className="bg-wic-primary text-white text-xs font-bold px-2 py-1 rounded shadow-md">
+                                      {cleanTag}
+                                    </div>
+                                  );
+                                })}
                               </div>
                             )}
                           </div>

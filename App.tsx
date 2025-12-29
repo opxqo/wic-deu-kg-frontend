@@ -22,6 +22,7 @@ import Dashboard from './pages/Admin/Dashboard';
 import UserManagement from './pages/Admin/UserManagement';
 import DepartmentManagement from './pages/Admin/DepartmentManagement';
 import MessageManagement from './pages/Admin/MessageManagement';
+import ArticleManagement from './pages/Admin/ArticleManagement';
 import { AnimatePresence } from 'framer-motion';
 import { LanguageProvider } from './LanguageContext';
 import { ThemeProvider, useTheme } from './ThemeContext';
@@ -96,7 +97,9 @@ const AppContent: React.FC = () => {
                       <Route index element={<Dashboard />} />
                       <Route path="users" element={<UserManagement />} />
                       <Route path="departments" element={<DepartmentManagement />} />
+                      <Route path="departments" element={<DepartmentManagement />} />
                       <Route path="messages" element={<MessageManagement />} />
+                      <Route path="articles" element={<ArticleManagement />} />
                     </Route>
                   </Route>
                   <Route path="/article/:id" element={<Article />} />

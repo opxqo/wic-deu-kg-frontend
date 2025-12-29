@@ -43,6 +43,7 @@ const AdminLayout: React.FC = () => {
         { icon: Users, label: '用户管理', path: '/admin/users' },
         { icon: School, label: '学部管理', path: '/admin/departments' },
         { icon: MessageSquare, label: '留言管理', path: '/admin/messages' },
+        { icon: School, label: '文章管理', path: '/admin/articles' }, // Reusing School icon or FileText if available, but School is imported
         { icon: Settings, label: '系统设置', path: '/admin/settings' },
     ];
 
