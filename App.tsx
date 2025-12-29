@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import LoadingScreen from './components/LoadingScreen';
 import Home from './pages/Home';
 import About from './pages/About';
+import Article from './pages/Article';
 import Chat from './pages/Chat';
 import Food from './pages/Food';
 import FoodDetail from './pages/FoodDetail';
@@ -98,6 +99,7 @@ const AppContent: React.FC = () => {
                       <Route path="messages" element={<MessageManagement />} />
                     </Route>
                   </Route>
+                  <Route path="/article/:id" element={<Article />} />
                 </Routes>
               </AnimatePresence>
             </Layout>

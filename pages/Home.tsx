@@ -3,19 +3,28 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
-  MessageCircle, Utensils, BookOpen, ChevronRight, Sparkles,
-  MessageSquareQuote, TrendingUp, Building2, Cpu, Stethoscope, Wrench,
-  Languages, Palette, Car, X, MapPin, Users, Calendar, Loader2
+  ChevronRight, TrendingUp, Building2, Cpu, Stethoscope, Wrench,
+  Languages, Palette, Car, X, MapPin, Users, Calendar, Loader2, MessageCircle
 } from 'lucide-react';
 import StatsSection from '../components/StatsSection';
 import HeroSection from '../components/HeroSection';
 import { useLanguage } from '../LanguageContext';
 import departmentService, { DepartmentVO } from '../services/departmentService';
-// Removed Dialog imports as we are using custom motion overlay for shared element transition
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import useEmblaCarousel from "embla-carousel-react"
+import Autoplay from "embla-carousel-autoplay"
+import { articleService } from "@/services/articleService";
+import { Article } from "@/types/article";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -27,16 +36,6 @@ const containerVariants = {
   }
 };
 
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 100 }
-  }
-};
-
-// 图标映射表：根据后端返回的 icon 字段名匹配前端图标
 const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
   'Cpu': Cpu,
   'Stethoscope': Stethoscope,
@@ -48,12 +47,10 @@ const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
   'Car': Car,
 };
 
-// 获取图标组件
 const getIconComponent = (iconName: string): React.ComponentType<{ size?: number }> => {
-  return iconMap[iconName] || Cpu; // 默认返回 Cpu 图标
+  return iconMap[iconName] || Cpu;
 };
 
-// 硬编码的学部数据（作为后备数据）
 const fallbackDepartmentsData = [
   {
     id: 1,
@@ -177,42 +174,18 @@ const fallbackDepartmentsData = [
   }
 ];
 
-const BentoCard: React.FC<{
-  to: string;
-  className?: string;
-  children: React.ReactNode;
-  delay?: number;
-}> = ({ to, className, children, delay = 0 }) => (
-  <motion.div
-    variants={itemVariants}
-    whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
-    whileTap={{ scale: 0.98 }}
-    className={`relative group overflow-hidden rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 ${className}`}
-  >
-    <Link to={to} className="block w-full h-full p-6">
-      {children}
-      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur rounded-full p-2 text-wic-primary dark:text-wic-accent shadow-sm">
-          <ChevronRight size={16} />
-        </div>
-      </div>
-    </Link>
-  </motion.div>
-);
-
 const Home: React.FC = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [departments, setDepartments] = useState<DepartmentVO[]>([]);
   const [loading, setLoading] = useState(true);
-  const { scrollY } = useScroll(); // Use global window scroll for the stats parallax
+
+  // Article State
+  const [articles, setArticles] = useState<Article[]>([]);
+
+  const { scrollY } = useScroll();
   const { t, language } = useLanguage();
 
-  // Stats Card Parallax Effect
-  // Slightly adjusted values for better mobile/desktop sync
-  const statsY = useTransform(scrollY, [0, 800], [200, -50]);
-  const statsOpacity = useTransform(scrollY, [0, 100, 400], [0, 0, 1]);
-
-  // 从后端获取学部数据
+  // Load Departments
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
@@ -223,14 +196,27 @@ const Home: React.FC = () => {
         }
       } catch (error) {
         console.error('获取学部列表失败:', error);
-        // 使用后备数据
         setDepartments(fallbackDepartmentsData);
       } finally {
         setLoading(false);
       }
     };
-
     fetchDepartments();
+  }, []);
+
+  // Load Articles
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const response = await articleService.getArticles(1, 6); // Fetch 6 items for carousel
+        if (response.code === 0 && response.data && response.data.records) {
+          setArticles(response.data.records);
+        }
+      } catch (error) {
+        console.error("Failed to load home articles", error);
+      }
+    };
+    fetchArticles();
   }, []);
 
   // Handle body scroll locking when modal is open
@@ -256,6 +242,20 @@ const Home: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Format date helper
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    try {
+      return new Date(dateString).toLocaleDateString('zh-CN');
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  // Stats Card Parallax Effect
+  const statsY = useTransform(scrollY, [0, 800], [200, -50]);
+  const statsOpacity = useTransform(scrollY, [0, 100, 400], [0, 0, 1]);
+
   return (
     <div className="w-full">
       {/* Refactored Hero Section */}
@@ -271,103 +271,125 @@ const Home: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Bento Grid Navigation (Services) */}
-      <section id="explore" className="py-24 px-4 max-w-7xl mx-auto bg-white dark:bg-transparent relative z-10 transition-colors duration-300">
-        <div className="flex items-end justify-between mb-12">
-          <div>
-            <span className="text-wic-primary dark:text-wic-accent font-bold tracking-wider text-sm uppercase mb-2 block">Our Services</span>
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white">{t('home.services.title')}</h2>
-            <p className="text-gray-500 dark:text-gray-400 mt-2 text-lg">{t('home.services.subtitle')}</p>
+      {/* Welcome Section */}
+      <section className="py-24 bg-white dark:bg-slate-900">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
+                欢迎来到武汉城市学院
+              </h2>
+              <p className="text-lg text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+                武汉城市学院（原武汉科技大学城市学院）是经教育部批准设置的全日制普通本科高等学校。学校现有武汉、红安两个校区，校园占地2041.94亩。
+              </p>
+              <p className="text-lg text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
+                学校始终坚守“为党育人、为国育才”初心，秉承“励志修德，勤学创新”校训，遵循“育人为本，质量立校，特色发展，争创一流”办学理念，致力于培养高素质应用型人才。
+              </p>
+              <Link to="https://www.wic.edu.cn/list_2.html" target="_blank" className="inline-flex items-center text-wic-primary font-semibold hover:underline">
+                了解更多关于我们的信息 <ChevronRight size={18} />
+              </Link>
+            </div>
+            <div className="relative overflow-hidden rounded-2xl shadow-xl">
+              <img
+                src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?q=80&w=2070&auto=format&fit=crop"
+                alt="Campus Sailboat"
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Latest News Section */}
+      <section className="py-24 bg-slate-50 dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex justify-between items-end mb-12">
+            <div>
+              <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">最新动态</h2>
+              <p className="text-gray-500 dark:text-gray-400">关注学院发展的每一个精彩瞬间</p>
+            </div>
+            <Link to="/news" className="hidden md:flex items-center text-wic-primary font-semibold hover:underline">
+              查看所有新闻 <ChevronRight size={18} />
+            </Link>
           </div>
 
-          <Link to="/seniors" className="hidden md:flex items-center gap-2 text-wic-primary dark:text-wic-accent font-bold hover:underline">
-            <span>{t('home.services.seniors')}</span>
-            <ChevronRight size={18} />
-          </Link>
-        </div>
+          <div className="w-full relative px-4 md:px-12">
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              plugins={[
+                Autoplay({
+                  delay: 5000,
+                }),
+              ]}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-4">
+                {articles.length > 0 ? (
+                  articles.map((article) => (
+                    <CarouselItem key={article.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                      <div className="p-1 h-full">
+                        <Card className="hover:shadow-lg transition-all border-none shadow-sm overflow-hidden group cursor-pointer h-full flex flex-col" onClick={() => window.location.hash = `#/article/${article.id}`}>
+                          <div className="h-48 overflow-hidden relative shrink-0">
+                            <img
+                              src={article.coverImage || "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop"}
+                              alt={article.title}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop"; // Fallback image
+                              }}
+                            />
+                            {article.tags && article.tags.length > 0 && (
+                              <div className="absolute top-4 left-4 bg-wic-primary text-white text-xs font-bold px-2 py-1 rounded shadow-md">
+                                {article.tags[0]}
+                              </div>
+                            )}
+                          </div>
+                          <CardContent className="p-6 flex flex-col flex-grow">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-wic-primary transition-colors line-clamp-2 min-h-[3.5rem]">
+                              {article.title}
+                            </h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2 min-h-[2.5rem]">
+                              {article.subtitle || "点击查看详情..."}
+                            </p>
+                            <div className="text-gray-400 text-xs flex items-center mt-auto">
+                              <Calendar className="h-3 w-3 mr-1" />
+                              {formatDate(article.publishDate || article.createdAt)}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </CarouselItem>
+                  ))
+                ) : (
+                  // Fallback Loading Skeleton (Simulated)
+                  [1, 2, 3].map((i) => (
+                    <CarouselItem key={i} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                      <div className="p-1 h-full">
+                        <div className="rounded-xl border bg-card text-card-foreground shadow h-[380px] flex flex-col p-6 space-y-4">
+                          <div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-md animate-pulse" />
+                          <div className="h-6 bg-slate-100 dark:bg-slate-800 rounded animate-pulse w-3/4" />
+                          <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse w-full" />
+                          <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse w-1/2" />
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  ))
+                )}
 
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-6 h-auto md:h-[600px]"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-        >
-          {/* Chat - Large Left */}
-          <BentoCard to="/chat" className="md:row-span-2 bg-gradient-to-br from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 dark:from-indigo-900/20 dark:to-blue-900/20 dark:hover:from-indigo-900/30 dark:hover:to-blue-900/30">
-            <div className="h-full flex flex-col justify-between">
-              <div>
-                <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white mb-6 shadow-xl shadow-indigo-200 dark:shadow-none">
-                  <MessageCircle size={28} />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('home.card.chat.title')}</h3>
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{t('home.card.chat.desc')}</p>
-              </div>
-              <div className="mt-8 space-y-3">
-                {(language === 'zh' ? ['信息工程学部', '医学部', '艺术与设计学部'] : ['Info Tech', 'Medicine', 'Art & Design']).map(dept => (
-                  <div key={dept} className="flex items-center gap-3 bg-white/80 dark:bg-slate-800/80 p-3 rounded-xl backdrop-blur-sm shadow-sm border border-white/50 dark:border-slate-700">
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-                    </span>
-                    <span className="text-sm font-bold text-gray-700 dark:text-gray-200">{dept}</span>
-                    <span className="ml-auto text-xs font-medium text-indigo-500 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/50 px-2 py-0.5 rounded-full">{t('home.card.chat.tag')}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </BentoCard>
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </div>
 
-          {/* Food - Top Mid */}
-          <BentoCard to="/food" className="bg-gradient-to-br from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 dark:from-orange-900/20 dark:to-red-900/20 dark:hover:from-orange-900/30 dark:hover:to-red-900/30">
-            <div className="flex items-start justify-between h-full flex-col">
-              <div className="w-12 h-12 bg-orange-500 rounded-2xl flex items-center justify-center text-white mb-4 shadow-xl shadow-orange-200 dark:shadow-none">
-                <Utensils size={24} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('home.card.food.title')}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{t('home.card.food.desc')}</p>
-              </div>
-            </div>
-          </BentoCard>
-
-          {/* Library - Top Right */}
-          <BentoCard to="/library" className="bg-gradient-to-br from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 dark:from-emerald-900/20 dark:to-teal-900/20 dark:hover:from-emerald-900/30 dark:hover:to-teal-900/30">
-            <div className="flex items-start justify-between h-full flex-col">
-              <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white mb-4 shadow-xl shadow-emerald-200 dark:shadow-none">
-                <BookOpen size={24} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('home.card.library.title')}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{t('home.card.library.desc')}</p>
-              </div>
-            </div>
-          </BentoCard>
-
-          {/* Gallery - Bottom Wide */}
-          <BentoCard to="/gallery" className="md:col-span-2 bg-gray-900 text-white relative group overflow-hidden">
-            <div className="absolute inset-0 z-0">
-              <img src="https://picsum.photos/seed/wicgallery/800/400" alt="Campus" className="w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-50 transition-all duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-            </div>
-            <div className="relative z-10 h-full flex flex-col justify-end p-2">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="bg-yellow-400/20 p-1.5 rounded-lg backdrop-blur-sm">
-                  <Sparkles className="text-yellow-400" size={20} />
-                </div>
-                <h3 className="text-xl font-bold">{t('home.card.gallery.title')}</h3>
-              </div>
-              <p className="text-gray-300 text-sm max-w-lg">{t('home.card.gallery.desc')}</p>
-            </div>
-          </BentoCard>
-        </motion.div>
-
-        {/* Mobile link for Seniors */}
-        <div className="mt-6 md:hidden text-center">
-          <Link to="/seniors" className="inline-flex items-center gap-2 text-wic-primary font-bold bg-gray-50 dark:bg-gray-800 px-6 py-3 rounded-full">
-            <MessageSquareQuote size={18} />
-            <span>{t('home.services.seniors')}</span>
-          </Link>
+          <div className="mt-8 md:hidden text-center">
+            <Link to="/news" className="text-wic-primary font-semibold hover:underline">
+              查看所有新闻 &rarr;
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -429,9 +451,9 @@ const Home: React.FC = () => {
                             </span>
                             <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 tabular-nums">{dept.onlineCount} Online</span>
                           </div>
-                          <Badge variant="secondary" className="text-[10px] uppercase tracking-wider bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 transition-colors">
+                          <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40">
                             {language === 'zh' ? dept.hotMajorZh : dept.hotMajorEn}
-                          </Badge>
+                          </span>
                         </div>
                       </CardContent>
                     </Card>

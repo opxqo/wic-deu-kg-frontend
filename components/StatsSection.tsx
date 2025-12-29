@@ -98,20 +98,20 @@ const StatsSection: React.FC = () => {
   const stats = [
     {
       label: language === 'zh' ? '校园占地' : 'Campus Area',
-      value: 1763,
+      value: 2041.94,
       suffix: '亩',
       icon: <IconArea />,
     },
     {
       label: language === 'zh' ? '建筑面积' : 'Building Area',
-      value: 55.17,
+      value: 67.20,
       suffix: '万平方',
       decimals: 2,
       icon: <IconBuilding />,
     },
     {
       label: language === 'zh' ? '教学设备' : 'Equipment',
-      value: 9636.49,
+      value: 12732.01,
       suffix: '万元',
       decimals: 2,
       icon: <IconEquipment />,
@@ -119,13 +119,13 @@ const StatsSection: React.FC = () => {
     {
       label: language === 'zh' ? '电子资源' : 'E-Resources',
       value: 100,
-      suffix: '+万册',
+      suffix: '万册',
       icon: <IconEbook />,
     },
     {
       label: language === 'zh' ? '纸质图书' : 'Paper Books',
-      value: 160,
-      suffix: '+万册',
+      value: 176.97,
+      suffix: '万册',
       icon: <IconBook />,
     },
   ];
