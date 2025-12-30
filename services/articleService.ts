@@ -1,6 +1,7 @@
 import { ArticleResponse, PageArticleResponse, Article } from "@/types/article";
+import { API_BASE_URL as ConfigApiBase } from '../src/config/apiConfig';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = ConfigApiBase;
 
 export const articleService = {
     /**
