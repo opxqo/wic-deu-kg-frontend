@@ -14,7 +14,7 @@ export const articleService = {
             keyword
         });
         try {
-            const response = await fetch(`${API_BASE_URL}/article?${params.toString()}`);
+            const response = await fetch(`${API_BASE_URL}/api/article?${params.toString()}`);
             if (!response.ok) {
                 throw new Error(`Error fetching articles: ${response.statusText}`);
             }
@@ -30,7 +30,7 @@ export const articleService = {
      */
     getArticleById: async (id: string): Promise<ArticleResponse> => {
         try {
-            const response = await fetch(`${API_BASE_URL}/article/${id}`);
+            const response = await fetch(`${API_BASE_URL}/api/article/${id}`);
             if (!response.ok) {
                 throw new Error(`Error fetching article: ${response.statusText}`);
             }
@@ -46,7 +46,7 @@ export const articleService = {
     createArticle: async (data: Partial<Article>): Promise<ArticleResponse> => {
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`${API_BASE_URL}/article`, {
+            const response = await fetch(`${API_BASE_URL}/api/article`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ export const articleService = {
         if (!data.id) throw new Error("Article ID is required for update");
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`${API_BASE_URL}/article`, {
+            const response = await fetch(`${API_BASE_URL}/api/article`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ export const articleService = {
     deleteArticle: async (id: string | number): Promise<any> => {
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`${API_BASE_URL}/article/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/api/article/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': token ? token.startsWith('Bearer ') ? token : `Bearer ${token}` : ''
