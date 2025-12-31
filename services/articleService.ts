@@ -71,7 +71,7 @@ export const articleService = {
         if (!data.id) throw new Error("Article ID is required for update");
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`${API_BASE_URL}/api/article`, {
+            const response = await fetch(`${API_BASE_URL}/api/article/${data.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
