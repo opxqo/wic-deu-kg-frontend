@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, Lock, Mail, ArrowRight, Eye, EyeOff, Loader2, ChevronLeft } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useUser } from '../UserContext';
+import { useConfig } from '../context/ConfigContext';
 import authService from '../services/authService';
 
 // Shadcn UI Components
@@ -38,6 +39,14 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { login } = useUser();
+  const { config } = useConfig();
+
+  // 如果未开放注册，强制切换到登录模式
+  React.useEffect(() => {
+    if (!config.openRegistration && !isLogin) {
+      setIsLogin(true);
+    }
+  }, [config.openRegistration, isLogin]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +76,8 @@ const Login: React.FC = () => {
           bio: result.data.user.bio,
           avatar: result.data.user.avatar,
           joinDate: result.data.user.createdAt,
+          role: result.data.user.role,
+          roleName: result.data.user.roleName,
         });
 
         navigate('/profile');
@@ -446,13 +457,19 @@ const Login: React.FC = () => {
                 </CardContent>
                 <CardFooter className="px-0 flex justify-center">
                   <p className="text-muted-foreground text-sm">
-                    {isLogin ? t('login.footer.no_account') : t('login.footer.has_account')}{" "}
-                    <button
-                      onClick={() => setIsLogin(!isLogin)}
-                      className="text-wic-primary font-semibold hover:underline ml-1"
-                    >
-                      {isLogin ? t('login.footer.link.register') : t('login.footer.link.login')}
-                    </button>
+                    {config.openRegistration ? (
+                      <>
+                        {isLogin ? t('login.footer.no_account') : t('login.footer.has_account')}{" "}
+                        <button
+                          onClick={() => setIsLogin(!isLogin)}
+                          className="text-wic-primary font-semibold hover:underline ml-1"
+                        >
+                          {isLogin ? t('login.footer.link.register') : t('login.footer.link.login')}
+                        </button>
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">暂未开放注册</span>
+                    )}
                   </p>
                 </CardFooter>
               </Card>

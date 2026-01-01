@@ -11,7 +11,8 @@ import {
     Moon,
     School,
     MessageSquare,
-    FileText
+    FileText,
+    Server
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -45,6 +46,7 @@ const AdminLayout: React.FC = () => {
         { icon: School, label: '学部管理', path: '/admin/departments' },
         { icon: MessageSquare, label: '留言管理', path: '/admin/messages' },
         { icon: FileText, label: '文章管理', path: '/admin/articles' },
+        { icon: Server, label: '数据库备份', path: '/admin/database' },
         { icon: Settings, label: '系统设置', path: '/admin/settings' },
     ];
 
